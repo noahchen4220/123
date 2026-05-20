@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>21CS 課程系統 Demo</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d1a24; font-family: 'PingFang TC', 'Noto Sans TC', sans-serif; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0d1a24; }
+    ::-webkit-scrollbar-thumb { background: #1a3040; border-radius: 99px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    const { useState, useMemo } = React;
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+
+const mockCourses = [{
+  id: 1,
+  name: "計算機概論",
+  code: "CS101",
+  start: "2026-02-23",
+  end: "2026-06-30",
+  status: "active",
+  progress: 62
+}, {
+  id: 2,
+  name: "資料結構",
+  code: "CS201",
+  start: "2025-02-17",
+  end: "2025-06-30",
+  status: "ended",
+  progress: 100
+}, {
+  id: 3,
+  name: "演算法設計",
+  code: "CS301",
+  start: "2024-02-19",
+  end: "2024-06-07",
+  status: "ended",
+  progress: 100
+}, {
+  id: 4,
+  name: "作業系統",
+  code: "CS302",
+  start: "2023-09-04",
+  end: "2023-12-31",
+  status: "ended",
+  progress: 100
+}, {
+  id: 5,
+  name: "計算機組織",
+  code: "CS303",
+  start: "2023-09-04",
+  end: "2023-12-31",
+  status: "ended",
+  progress: 100
+}];
+const mockAssignments = {
+  1: [{
+    id: "a1",
+    type: "程式作業",
+    name: "Homework 1 - Hello World",
+    start: "2026-04-20",
+    end: "2026-05-21 23:50",
+    submitted: true,
+    score: 95,
+    classAvg: 78.4,
+    classMax: 100,
+    classMin: 32,
+    dist: [28, 35, 27, 16, 12],
+    total: 142,
+    submitCnt: 118
+  }, {
+    id: "a2",
+    type: "程式作業",
+    name: "Homework 2 - Sorting",
+    start: "2026-05-08",
+    end: "2026-05-10 00:00",
+    submitted: false,
+    score: null,
+    classAvg: null,
+    classMax: null,
+    classMin: null,
+    dist: null,
+    total: 142,
+    submitCnt: 0
+  }, {
+    id: "a3",
+    type: "程式作業",
+    name: "Homework 3 - Recursion",
+    start: "2026-05-03",
+    end: "2026-06-20 23:50",
+    submitted: false,
+    score: null,
+    classAvg: null,
+    classMax: null,
+    classMin: null,
+    dist: null,
+    total: 142,
+    submitCnt: 0
+  }, {
+    id: "a4",
+    type: "程式作業",
+    name: "Homework 4 - Graph",
+    start: "2026-05-24",
+    end: "2026-06-19 00:00",
+    submitted: false,
+    score: null,
+    classAvg: null,
+    classMax: null,
+    classMin: null,
+    dist: null,
+    total: 142,
+    submitCnt: 0
+  }]
+};
+const mockCourseContent = {
+  1: {
+    videos: [{
+      id: "v1",
+      week: "Week 1",
+      title: "計算機的歷史與分類",
+      duration: "18:24",
+      watched: true,
+      watchedAt: "2026-03-02"
+    }, {
+      id: "v2",
+      week: "Week 2",
+      title: "二進位與十六進位轉換",
+      duration: "22:10",
+      watched: true,
+      watchedAt: "2026-03-09"
+    }, {
+      id: "v3",
+      week: "Week 3",
+      title: "布林代數基礎",
+      duration: "31:05",
+      watched: true,
+      watchedAt: "2026-03-16"
+    }, {
+      id: "v4",
+      week: "Week 4",
+      title: "邏輯閘與電路設計",
+      duration: "27:48",
+      watched: true,
+      watchedAt: "2026-03-23"
+    }, {
+      id: "v5",
+      week: "Week 5",
+      title: "Karnaugh Map 化簡法",
+      duration: "35:12",
+      watched: true,
+      watchedAt: "2026-04-07"
+    }, {
+      id: "v6",
+      week: "Week 6",
+      title: "正反器與暫存器",
+      duration: "29:33",
+      watched: true,
+      watchedAt: "2026-04-21"
+    }, {
+      id: "v7",
+      week: "Week 7",
+      title: "計數器與狀態機",
+      duration: "33:00",
+      watched: true,
+      watchedAt: "2026-05-05"
+    }, {
+      id: "v8",
+      week: "Week 8",
+      title: "記憶體種類與結構",
+      duration: "25:47",
+      watched: false,
+      watchedAt: null
+    }, {
+      id: "v9",
+      week: "Week 9",
+      title: "Cache 快取記憶體",
+      duration: "28:19",
+      watched: false,
+      watchedAt: null
+    }, {
+      id: "v10",
+      week: "Week 10",
+      title: "虛擬記憶體與分頁",
+      duration: "30:55",
+      watched: false,
+      watchedAt: null
+    }],
+    released: [{
+      id: "r1",
+      type: "assignment",
+      title: "Homework 2 - Sorting 已發布",
+      date: "2026-05-08",
+      note: "截止 2026-06-15 00:00"
+    }, {
+      id: "r2",
+      type: "assignment",
+      title: "Homework 3 - Recursion 已發布",
+      date: "2026-05-03",
+      note: "截止 2026-05-14 23:50"
+    }, {
+      id: "r3",
+      type: "answer",
+      title: "Homework 1 解答公告",
+      date: "2026-05-22",
+      note: "請對照評分標準自行檢討"
+    }, {
+      id: "r4",
+      type: "answer",
+      title: "Week 7 影片作業解析",
+      date: "2026-05-15",
+      note: "已上傳至課程檔案區"
+    }]
+  }
+};
+const mockGradeWeights = {
+  1: [{
+    group: "討論與出席",
+    weight: 10
+  }, {
+    group: "程式作業",
+    weight: 20
+  }, {
+    group: "期中考",
+    weight: 35
+  }, {
+    group: "期末考",
+    weight: 35
+  }, {
+    group: "加分題",
+    weight: 5
+  }, {
+    group: "總計",
+    weight: 105,
+    isTotal: true
+  }]
+};
+const mockExams = {
+  1: [{
+    id: "e1",
+    name: "Homework 1 - Hello World",
+    due: "2026-05-21 23:50",
+    submitted: "2026-05-20 18:22",
+    status: null,
+    score: 95,
+    outOf: 100,
+    classAvg: 78.4,
+    classMax: 100,
+    classMin: 32,
+    rank: 12,
+    total: 142
+  }, {
+    id: "e2",
+    name: "Week 6 影片觀看",
+    due: "2026-05-15 13:20",
+    submitted: "2026-05-14 21:05",
+    status: null,
+    score: 100,
+    outOf: 100,
+    classAvg: 96.2,
+    classMax: 100,
+    classMin: 60,
+    rank: 1,
+    total: 142
+  }, {
+    id: "e3",
+    name: "Week 7 影片觀看",
+    due: "2026-05-08 13:20",
+    submitted: "2026-05-08 10:44",
+    status: null,
+    score: 100,
+    outOf: 100,
+    classAvg: 94.5,
+    classMax: 100,
+    classMin: 50,
+    rank: 1,
+    total: 142
+  }, {
+    id: "e4",
+    name: "小考一",
+    due: "2026-03-15 23:50",
+    submitted: "2026-03-14 20:33",
+    status: null,
+    score: 88,
+    outOf: 100,
+    classAvg: 74.2,
+    classMax: 100,
+    classMin: 30,
+    rank: 18,
+    total: 142
+  }, {
+    id: "e5",
+    name: "小考二",
+    due: "2026-04-05 23:50",
+    submitted: "2026-04-05 22:11",
+    status: null,
+    score: 92,
+    outOf: 100,
+    classAvg: 80.1,
+    classMax: 100,
+    classMin: 42,
+    rank: 11,
+    total: 142
+  }, {
+    id: "e6",
+    name: "期中考 (實體考試)",
+    due: "2026-04-25 10:10",
+    submitted: null,
+    status: "missing",
+    score: 79,
+    outOf: 100,
+    classAvg: 71.8,
+    classMax: 99,
+    classMin: 28,
+    rank: 34,
+    total: 142
+  }, {
+    id: "e7",
+    name: "小考三",
+    due: "2026-05-10 23:50",
+    submitted: "2026-05-12 01:04",
+    status: "late",
+    score: 82,
+    outOf: 100,
+    classAvg: 76.3,
+    classMax: 100,
+    classMin: 25,
+    rank: 28,
+    total: 142
+  }, {
+    id: "e8",
+    name: "程式實作測驗",
+    due: "2026-05-18 17:00",
+    submitted: "2026-05-18 16:58",
+    status: null,
+    score: 95,
+    outOf: 100,
+    classAvg: 81.0,
+    classMax: 100,
+    classMin: 40,
+    rank: 8,
+    total: 142
+  }, {
+    id: "e9",
+    name: "Homework 2 - Sorting",
+    due: "2026-06-15 00:00",
+    submitted: null,
+    status: null,
+    score: null,
+    outOf: 100,
+    classAvg: null,
+    classMax: null,
+    classMin: null,
+    rank: null,
+    total: 142
+  }, {
+    id: "e10",
+    name: "Homework 3 - Recursion",
+    due: "2026-05-14 23:50",
+    submitted: null,
+    status: "missing",
+    score: null,
+    outOf: 100,
+    classAvg: null,
+    classMax: null,
+    classMin: null,
+    rank: null,
+    total: 142
+  }, {
+    id: "e11",
+    name: "期末考 (實體考試)",
+    due: "2026-06-25 10:10",
+    submitted: null,
+    status: null,
+    score: null,
+    outOf: 100,
+    classAvg: null,
+    classMax: null,
+    classMin: null,
+    rank: null,
+    total: 142
+  }]
+};
+const mockNotifications = [{
+  id: 1,
+  type: "assignment",
+  course: "計算機概論",
+  title: "Homework 1 - Hello World",
+  deadline: "2026-05-21",
+  urgent: true
+}, {
+  id: 2,
+  type: "assignment",
+  course: "計算機概論",
+  title: "Homework 2 - Sorting",
+  deadline: "2026-06-15",
+  urgent: false
+}, {
+  id: 3,
+  type: "exam",
+  course: "計算機概論",
+  title: "期中考",
+  deadline: "2026-06-05",
+  urgent: false
+}, {
+  id: 4,
+  type: "exam",
+  course: "計算機概論",
+  title: "期末考",
+  deadline: "2026-06-25",
+  urgent: false
+}];
+const today = new Date("2026-05-20");
+
+
+function daysUntil(str) {
+  return Math.ceil((new Date(str) - today) / 86400000);
+}
+function fmt(str) {
+  if (!str) return "—";
+  const [date, time] = str.split(" ");
+  const [y, m, d] = date.split("-");
+  return time ? `${y}/${m}/${d} ${time.slice(0, 5)}` : `${y}/${m}/${d}`;
+}
+function percentile(score, avg) {
+  if (score === null || avg === null) return null;
+  return Math.min(99, Math.round(50 + (score - avg) / avg * 40));
+}
+
+
+const C = {
+  bg: "#0d1a24",
+  panel: "#0e1e2a",
+  card: "#162736",
+  cardDim: "#111e2a",
+  border: "#1a3040",
+  borderDim: "#1a2f3a",
+  teal: "#2a9d80",
+  tealLt: "#5ee6c8",
+  tealBg: "#0d2a24",
+  amber: "#f0c060",
+  amberBg: "#2a1c05",
+  red: "#c0392b",
+  redLt: "#f87171",
+  purple: "#a78bfa",
+  purpleBg: "#1a0f2e",
+  text: "#d1e8f0",
+  muted: "#4e6a7a",
+  mutedMid: "#2a5a6a"
+};
+
+
+function Chip({
+  label,
+  color,
+  bg,
+  border
+}) {
+  return /*#__PURE__*/React.createElement("span", {
+    style: {
+      background: bg,
+      color,
+      border: `1px solid ${border || color + "33"}`,
+      borderRadius: 5,
+      padding: "2px 7px",
+      fontSize: 10,
+      fontWeight: 700,
+      whiteSpace: "nowrap"
+    }
+  }, label);
+}
+function DeadlineBadge({
+  end
+}) {
+  const d = daysUntil(end);
+  if (d < 0) return /*#__PURE__*/React.createElement(Chip, {
+    label: "\u5DF2\u622A\u6B62",
+    color: C.muted,
+    bg: "transparent"
+  });
+  if (d === 0) return /*#__PURE__*/React.createElement(Chip, {
+    label: "\u4ECA\u65E5\u622A\u6B62",
+    color: "#fff",
+    bg: C.red
+  });
+  if (d <= 3) return /*#__PURE__*/React.createElement(Chip, {
+    label: `剩 ${d} 天`,
+    color: "#fff",
+    bg: C.red
+  });
+  if (d <= 7) return /*#__PURE__*/React.createElement(Chip, {
+    label: `剩 ${d} 天`,
+    color: "#fff",
+    bg: "#c0720a"
+  });
+  if (d <= 30) return /*#__PURE__*/React.createElement(Chip, {
+    label: `剩 ${d} 天`,
+    color: "#fff",
+    bg: "#2a7a40"
+  });
+  return /*#__PURE__*/React.createElement(Chip, {
+    label: `剩 ${d} 天`,
+    color: C.tealLt,
+    bg: C.tealBg,
+    border: C.teal
+  });
+}
+function DateBlock({
+  start,
+  end,
+  dim
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0e1e2a",
+      border: `1px solid ${C.border}`,
+      borderRadius: 8,
+      padding: "8px 12px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.muted,
+      letterSpacing: .5,
+      marginBottom: 3
+    }
+  }, "\u958B\u59CB"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: dim ? C.mutedMid : C.tealLt
+    }
+  }, fmt(start))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: C.mutedMid,
+      fontSize: 14
+    }
+  }, "\u2192"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.muted,
+      letterSpacing: .5,
+      marginBottom: 3
+    }
+  }, "\u7D50\u675F"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: dim ? C.mutedMid : C.amber
+    }
+  }, fmt(end))));
+}
+function ProgressBar({
+  value,
+  dim,
+  color
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "100%",
+      background: "#0e1e2a",
+      borderRadius: 99,
+      height: 5,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: `${value}%`,
+      background: color || (dim ? C.mutedMid : C.teal),
+      height: "100%",
+      borderRadius: 99
+    }
+  }));
+}
+function StatBox({
+  label,
+  value,
+  unit,
+  color
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0e1e2a",
+      border: `1px solid ${C.border}`,
+      borderRadius: 10,
+      padding: "11px 12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.muted,
+      marginBottom: 4
+    }
+  }, label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      fontWeight: 800,
+      color: color || C.tealLt,
+      lineHeight: 1
+    }
+  }, value, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      marginLeft: 2
+    }
+  }, unit)));
+}
+function MiniBar({
+  dist,
+  colors
+}) {
+  const max = Math.max(...dist);
+  const barColors = colors || [C.teal, C.teal, "#d4880a", "#c05020", C.red];
+  const labels = ["90+", "80s", "70s", "60s", "<60"];
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "flex-end",
+      gap: 6,
+      height: 72
+    }
+  }, dist.map((v, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 3
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 9,
+      color: C.muted
+    }
+  }, v), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "100%",
+      background: barColors[i],
+      borderRadius: "3px 3px 0 0",
+      height: `${v / max * 54}px`,
+      minHeight: 3
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 8,
+      color: C.muted
+    }
+  }, labels[i]))));
+}
+
+
+function NotificationPanel({
+  onClose
+}) {
+  const [tab, setTab] = useState("all");
+  const list = tab === "all" ? mockNotifications : mockNotifications.filter(n => n.type === tab);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 50,
+      right: 0,
+      width: 280,
+      background: C.card,
+      border: `1px solid ${C.border}`,
+      borderRadius: 14,
+      boxShadow: "0 8px 32px #00000090",
+      zIndex: 300,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "11px 14px 0",
+      borderBottom: `1px solid ${C.border}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginBottom: 9
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: C.text
+    }
+  }, "\u901A\u77E5"), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    style: {
+      background: "none",
+      border: "none",
+      color: C.muted,
+      cursor: "pointer",
+      fontSize: 17,
+      lineHeight: 1
+    }
+  }, "\xD7")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex"
+    }
+  }, [["all", "全部"], ["assignment", "作業"], ["exam", "考試"]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
+    key: k,
+    onClick: () => setTab(k),
+    style: {
+      flex: 1,
+      background: "none",
+      border: "none",
+      borderBottom: tab === k ? `2px solid ${C.teal}` : "2px solid transparent",
+      color: tab === k ? C.teal : C.muted,
+      padding: "5px 0 7px",
+      fontSize: 11,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, l)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxHeight: 280,
+      overflowY: "auto"
+    }
+  }, list.map(n => {
+    const d = daysUntil(n.deadline);
+    const isA = n.type === "assignment";
+    return /*#__PURE__*/React.createElement("div", {
+      key: n.id,
+      style: {
+        padding: "10px 14px",
+        borderBottom: `1px solid #1a3040`,
+        background: n.urgent ? "#1c0e0e" : "transparent",
+        display: "flex",
+        gap: 9,
+        alignItems: "flex-start"
+      }
+    }, /*#__PURE__*/React.createElement(Chip, {
+      label: isA ? "作業" : "考試",
+      color: isA ? C.teal : C.amber,
+      bg: isA ? C.tealBg : C.amberBg,
+      border: isA ? C.teal : C.amber
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        fontWeight: 600,
+        color: n.urgent ? C.redLt : C.text,
+        marginBottom: 2
+      }
+    }, n.title), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: C.muted
+      }
+    }, n.course), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 3,
+        display: "flex",
+        justifyContent: "space-between"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: C.muted
+      }
+    }, fmt(n.deadline)), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        fontWeight: 700,
+        color: d <= 3 ? C.redLt : d <= 7 ? "#fbbf24" : C.muted
+      }
+    }, d <= 0 ? "已截止" : `剩 ${d} 天`))));
+  })));
+}
+
+
+function Header({
+  title,
+  sub,
+  onBack,
+  notifOpen,
+  setNotifOpen,
+  showRegister
+}) {
+  const urgentCount = mockNotifications.filter(n => daysUntil(n.deadline) <= 7).length;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.panel,
+      borderBottom: `1px solid ${C.border}`,
+      padding: "12px 16px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      position: "sticky",
+      top: 0,
+      zIndex: 100
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 9
+    }
+  }, onBack && /*#__PURE__*/React.createElement("button", {
+    onClick: onBack,
+    style: {
+      background: "none",
+      border: "none",
+      color: C.teal,
+      cursor: "pointer",
+      fontSize: 22,
+      lineHeight: 1,
+      padding: 0,
+      marginRight: 2
+    }
+  }, "\u2039"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 800,
+      color: C.text,
+      lineHeight: 1.2
+    }
+  }, title), sub && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.muted,
+      marginTop: 1
+    }
+  }, sub))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 9,
+      alignItems: "center",
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setNotifOpen(v => !v),
+    style: {
+      position: "relative",
+      background: notifOpen ? C.card : C.panel,
+      border: `1px solid ${C.border}`,
+      borderRadius: 8,
+      width: 34,
+      height: 30,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      fontSize: 15
+    }
+  }, "\uD83D\uDD14", urgentCount > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: -5,
+      right: -5,
+      background: C.red,
+      color: "#fff",
+      borderRadius: 99,
+      width: 15,
+      height: 15,
+      fontSize: 9,
+      fontWeight: 800,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      border: `2px solid ${C.panel}`
+    }
+  }, urgentCount)), showRegister && /*#__PURE__*/React.createElement("button", {
+    style: {
+      background: C.teal,
+      color: "#fff",
+      border: "none",
+      borderRadius: 8,
+      padding: "6px 12px",
+      fontSize: 12,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, "+ \u8A3B\u518A\u8AB2\u7A0B"), notifOpen && /*#__PURE__*/React.createElement(NotificationPanel, {
+    onClose: () => setNotifOpen(false)
+  })));
+}
+
+
+function CoursePage({
+  onAssignments,
+  onExams,
+  notifOpen,
+  setNotifOpen
+}) {
+  const [filter, setFilter] = useState("all");
+  const activeCnt = mockCourses.filter(c => c.status === "active").length;
+  const filtered = useMemo(() => {
+    if (filter === "active") return mockCourses.filter(c => c.status === "active");
+    if (filter === "ended") return mockCourses.filter(c => c.status === "ended");
+    return mockCourses;
+  }, [filter]);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Header, {
+    title: "21CS",
+    notifOpen: notifOpen,
+    setNotifOpen: setNotifOpen,
+    showRegister: true
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "16px 16px 0"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 800,
+      color: C.text,
+      marginBottom: 2
+    }
+  }, "\u6211\u7684\u8AB2\u7A0B"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "\u5171 ", mockCourses.length, " \u9580\u8AB2\u7A0B\u30FB", activeCnt, " \u9580\u9032\u884C\u4E2D"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      marginTop: 12,
+      background: C.panel,
+      borderRadius: 10,
+      padding: 3,
+      border: `1px solid ${C.border}`
+    }
+  }, [["all", `全部(${mockCourses.length})`], ["active", `進行中(${activeCnt})`], ["ended", `已結束(${mockCourses.length - activeCnt})`]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
+    key: k,
+    onClick: () => setFilter(k),
+    style: {
+      flex: 1,
+      background: filter === k ? C.teal : "transparent",
+      color: filter === k ? "#fff" : C.muted,
+      border: "none",
+      borderRadius: 7,
+      padding: "7px 4px",
+      fontSize: 11,
+      fontWeight: 600,
+      cursor: "pointer"
+    }
+  }, l)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "12px 16px 0",
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, filtered.map(course => {
+    const isActive = course.status === "active";
+    return /*#__PURE__*/React.createElement("div", {
+      key: course.id,
+      style: {
+        background: isActive ? C.card : C.cardDim,
+        border: `1px solid ${isActive ? C.teal : C.borderDim}`,
+        borderRadius: 12,
+        padding: "13px 14px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 9,
+        position: "relative"
+      }
+    }, isActive && /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: "absolute",
+        top: 11,
+        right: 11,
+        width: 7,
+        height: 7,
+        borderRadius: "50%",
+        background: C.teal,
+        boxShadow: `0 0 7px ${C.teal}`
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        gap: 8
+      }
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 15,
+        fontWeight: 700,
+        color: isActive ? C.text : C.muted
+      }
+    }, course.name), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: C.mutedMid,
+        marginTop: 1
+      }
+    }, course.code)), /*#__PURE__*/React.createElement(DeadlineBadge, {
+      end: course.end
+    })), /*#__PURE__*/React.createElement(DateBlock, {
+      start: course.start,
+      end: course.end,
+      dim: !isActive
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        marginBottom: 4
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: C.muted
+      }
+    }, "\u8AB2\u7A0B\u9032\u5EA6"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        fontWeight: 700,
+        color: isActive ? C.teal : C.mutedMid
+      }
+    }, course.progress, "%")), /*#__PURE__*/React.createElement(ProgressBar, {
+      value: course.progress,
+      dim: !isActive
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 8
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => onAssignments(course),
+      style: {
+        flex: 1,
+        background: isActive ? C.teal : "#162736",
+        color: isActive ? "#fff" : C.muted,
+        border: "none",
+        borderRadius: 8,
+        padding: "9px 0",
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: "pointer"
+      }
+    }, "\u25B6 \u9032\u5165\u8AB2\u7A0B"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => onExams(course),
+      style: {
+        flex: 1,
+        background: "#0e1e2a",
+        color: isActive ? C.purple : C.muted,
+        border: `1px solid ${isActive ? C.purple + "44" : C.borderDim}`,
+        borderRadius: 8,
+        padding: "9px 0",
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: "pointer"
+      }
+    }, "\uD83D\uDCDD \u8003\u8A66\u6210\u7E3E")));
+  })));
+}
+
+
+function SubmitZone({
+  assignment,
+  statusMeta
+}) {
+  const [dragging, setDragging] = useState(false);
+  const [fileName, setFileName] = useState(assignment.submitted ? "已繳交檔案.zip" : null);
+  const st = !assignment.submitted ? daysUntil(assignment.end) < 0 ? "overdue" : "pending" : "submitted";
+  const sm = statusMeta[st];
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0e1e2a",
+      border: `1px solid ${C.border}`,
+      borderRadius: 10,
+      padding: "12px 13px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: 10,
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: C.text,
+      lineHeight: 1.3
+    }
+  }, assignment.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 12,
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 9,
+      color: C.muted
+    }
+  }, "\u767C\u5E03"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: C.muted
+    }
+  }, fmt(assignment.start))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 9,
+      color: C.muted
+    }
+  }, "\u622A\u6B62"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: daysUntil(assignment.end) <= 3 && !assignment.submitted ? C.redLt : daysUntil(assignment.end) <= 7 && !assignment.submitted ? C.amber : C.tealLt
+    }
+  }, fmt(assignment.end)), !assignment.submitted && daysUntil(assignment.end) >= 0 && /*#__PURE__*/React.createElement(DeadlineBadge, {
+    end: assignment.end
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: sm.bg,
+      color: sm.color,
+      border: `1px solid ${sm.border}`,
+      borderRadius: 7,
+      padding: "4px 9px",
+      fontSize: 11,
+      fontWeight: 700,
+      whiteSpace: "nowrap"
+    }
+  }, sm.label)), assignment.submitted && assignment.score !== null && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      background: C.card,
+      border: `1px solid ${C.border}`,
+      borderRadius: 8,
+      padding: "8px 12px",
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.muted,
+      marginBottom: 2
+    }
+  }, "\u6279\u6539\u6210\u7E3E"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      fontWeight: 900,
+      color: C.amber,
+      lineHeight: 1
+    }
+  }, assignment.score, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, " \u5206")))), /*#__PURE__*/React.createElement("div", {
+    onDragOver: e => {
+      e.preventDefault();
+      setDragging(true);
+    },
+    onDragLeave: () => setDragging(false),
+    onDrop: e => {
+      e.preventDefault();
+      setDragging(false);
+      const f = e.dataTransfer.files[0];
+      if (f) setFileName(f.name);
+    },
+    style: {
+      border: `2px dashed ${dragging ? C.teal : fileName ? C.teal + "44" : C.border}`,
+      borderRadius: 9,
+      padding: "16px 12px",
+      textAlign: "center",
+      background: dragging ? C.tealBg : "transparent",
+      transition: "all .15s"
+    }
+  }, fileName ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 16
+    }
+  }, "\uD83D\uDCCE"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: C.tealLt,
+      fontWeight: 600
+    }
+  }, fileName), !assignment.submitted && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setFileName(null),
+    style: {
+      background: "none",
+      border: "none",
+      color: C.muted,
+      cursor: "pointer",
+      fontSize: 14
+    }
+  }, "\xD7")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      marginBottom: 6
+    }
+  }, "\uD83D\uDCC1"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted
+    }
+  }, "\u62D6\u66F3\u6A94\u6848\u81F3\u6B64\u6216"), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "inline-block",
+      marginTop: 6,
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      background: C.teal,
+      color: "#fff",
+      borderRadius: 7,
+      padding: "5px 14px",
+      fontSize: 12,
+      fontWeight: 600
+    }
+  }, "\u9078\u64C7\u6A94\u6848"), /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    style: {
+      display: "none"
+    },
+    onChange: e => {
+      if (e.target.files[0]) setFileName(e.target.files[0].name);
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.muted,
+      marginTop: 6
+    }
+  }, "\u5EFA\u8B70\u4E0A\u50B3 PDF \u6216 .ZIP \u6A94"))), !assignment.submitted && /*#__PURE__*/React.createElement("button", {
+    disabled: !fileName,
+    style: {
+      width: "100%",
+      marginTop: 10,
+      background: fileName ? C.teal : "#162736",
+      color: fileName ? "#fff" : C.muted,
+      border: "none",
+      borderRadius: 8,
+      padding: "10px 0",
+      fontSize: 13,
+      fontWeight: 700,
+      cursor: fileName ? "pointer" : "default",
+      transition: "all .15s"
+    }
+  }, fileName ? "✓ 確認繳交" : "尚未選擇檔案"));
+}
+function CourseInnerPage({
+  course,
+  onBack,
+  notifOpen,
+  setNotifOpen
+}) {
+  const [tab, setTab] = useState("content");
+  const assignments = mockAssignments[course.id] || [];
+  const content = mockCourseContent[course.id] || {
+    videos: [],
+    released: []
+  };
+  const statusMeta = {
+    submitted: {
+      label: "已繳交",
+      color: "#4ade80",
+      bg: "#052a15",
+      border: "#14532d"
+    },
+    pending: {
+      label: "待繳交",
+      color: C.amber,
+      bg: C.amberBg,
+      border: C.amber
+    },
+    overdue: {
+      label: "逾期",
+      color: C.redLt,
+      bg: "#2a0a0a",
+      border: C.red
+    }
+  };
+
+  // Sort videos: unwatched first
+  const sortedVideos = [...content.videos.filter(v => !v.watched), ...content.videos.filter(v => v.watched)];
+  const relTypeC = {
+    assignment: {
+      label: "作業發布",
+      color: C.tealLt,
+      bg: C.tealBg,
+      border: C.teal
+    },
+    answer: {
+      label: "公告解答",
+      color: C.amber,
+      bg: C.amberBg,
+      border: C.amber
+    }
+  };
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Header, {
+    title: course.name,
+    sub: course.code,
+    onBack: onBack,
+    notifOpen: notifOpen,
+    setNotifOpen: setNotifOpen
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      background: C.panel,
+      borderBottom: `1px solid ${C.border}`
+    }
+  }, [["content", "課程內容"], ["assignments", "作業"]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
+    key: k,
+    onClick: () => setTab(k),
+    style: {
+      flex: 1,
+      background: "none",
+      border: "none",
+      borderBottom: tab === k ? `2px solid ${C.teal}` : "2px solid transparent",
+      color: tab === k ? C.teal : C.muted,
+      padding: "13px 0",
+      fontSize: 13,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, l))), tab === "content" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "14px 16px 0"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.muted,
+      letterSpacing: .5,
+      marginBottom: 8
+    }
+  }, "\u5F71\u7247\u89C0\u770B\u78BA\u8A8D", /*#__PURE__*/React.createElement("span", {
+    style: {
+      marginLeft: 8,
+      fontSize: 10,
+      fontWeight: 400,
+      color: C.mutedMid
+    }
+  }, content.videos.filter(v => v.watched).length, "/", content.videos.length, " \u90E8\u5DF2\u89C0\u770B")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.card,
+      border: `1px solid ${C.border}`,
+      borderRadius: 12,
+      overflow: "hidden"
+    }
+  }, sortedVideos.map((v, idx) => /*#__PURE__*/React.createElement("div", {
+    key: v.id,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "11px 13px",
+      borderBottom: idx < sortedVideos.length - 1 ? `1px solid #132030` : "none",
+      background: !v.watched ? "#0d1523" : "transparent"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 30,
+      height: 30,
+      borderRadius: "50%",
+      flexShrink: 0,
+      background: v.watched ? C.tealBg : "#1a2a3a",
+      border: `1px solid ${v.watched ? C.teal + "55" : C.border}`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 11,
+      color: v.watched ? C.teal : C.mutedMid
+    }
+  }, v.watched ? "✓" : "▶"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: v.watched ? C.text : C.text,
+      lineHeight: 1.3
+    }
+  }, v.title), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.muted,
+      marginTop: 2,
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", null, v.week), /*#__PURE__*/React.createElement("span", null, "\u23F1 ", v.duration), v.watched && v.watchedAt && /*#__PURE__*/React.createElement("span", null, "\u89C0\u770B\u65BC ", fmt(v.watchedAt)))), /*#__PURE__*/React.createElement(Chip, {
+    label: v.watched ? "已觀看" : "未觀看",
+    color: v.watched ? "#4ade80" : C.amber,
+    bg: v.watched ? "#052a15" : C.amberBg,
+    border: v.watched ? "#14532d" : C.amber
+  }))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.muted,
+      letterSpacing: .5,
+      marginBottom: 8
+    }
+  }, "\u4F5C\u696D\u3001\u8003\u8A66\u984C\u76EE\u8207\u89E3\u7B54"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.card,
+      border: `1px solid ${C.border}`,
+      borderRadius: 12,
+      overflow: "hidden"
+    }
+  }, content.released.map((r, idx) => {
+    const rc = relTypeC[r.type] || relTypeC.assignment;
+    return /*#__PURE__*/React.createElement("div", {
+      key: r.id,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "12px 13px",
+        borderBottom: idx < content.released.length - 1 ? `1px solid #132030` : "none"
+      }
+    }, /*#__PURE__*/React.createElement(Chip, {
+      label: rc.label,
+      color: rc.color,
+      bg: rc.bg,
+      border: rc.border
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.text,
+        lineHeight: 1.3
+      }
+    }, r.title), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: C.muted,
+        marginTop: 2
+      }
+    }, r.note)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+        gap: 5,
+        flexShrink: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 9,
+        color: C.muted
+      }
+    }, fmt(r.date)), /*#__PURE__*/React.createElement("a", {
+      href: "#",
+      onClick: e => e.preventDefault(),
+      style: {
+        background: C.tealBg,
+        color: C.tealLt,
+        border: `1px solid ${C.teal}44`,
+        borderRadius: 6,
+        padding: "3px 9px",
+        fontSize: 11,
+        fontWeight: 600,
+        textDecoration: "none",
+        display: "flex",
+        alignItems: "center",
+        gap: 4
+      }
+    }, "\u2193 \u4E0B\u8F09")));
+  })))), tab === "assignments" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "14px 16px 0",
+      display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, assignments.map(a => /*#__PURE__*/React.createElement(SubmitZone, {
+    key: a.id,
+    assignment: a,
+    statusMeta: statusMeta
+  }))));
+}
+function StatusBadge({
+  status
+}) {
+  if (!status) return null;
+  if (status === "missing") return /*#__PURE__*/React.createElement("span", {
+    style: {
+      border: `1px solid ${C.red}`,
+      color: C.redLt,
+      borderRadius: 99,
+      padding: "2px 8px",
+      fontSize: 10,
+      fontWeight: 600,
+      whiteSpace: "nowrap"
+    }
+  }, "missing");
+  if (status === "late") return /*#__PURE__*/React.createElement("span", {
+    style: {
+      border: `1px solid #38bdf8`,
+      color: "#38bdf8",
+      borderRadius: 99,
+      padding: "2px 8px",
+      fontSize: 10,
+      fontWeight: 600,
+      whiteSpace: "nowrap"
+    }
+  }, "late");
+  return null;
+}
+
+
+function ExamPage({
+  course,
+  onBack,
+  notifOpen,
+  setNotifOpen
+}) {
+  const exams = mockExams[course.id] || [];
+  const weights = mockGradeWeights[course.id] || [];
+  const done = exams.filter(e => e.score !== null);
+  const avg = done.length ? (done.reduce((s, e) => s + e.score, 0) / done.length).toFixed(1) : "—";
+  const COL = {
+    name: 3,
+    due: 2.2,
+    submitted: 2.2,
+    status: 1.2,
+    score: 1.5
+  };
+  const SCORE_COLOR = C.amber;
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Header, {
+    title: "\u8003\u8A66\u6210\u7E3E",
+    sub: `${course.code} ${course.name}`,
+    onBack: onBack,
+    notifOpen: notifOpen,
+    setNotifOpen: setNotifOpen
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      margin: "14px 16px 0",
+      background: C.card,
+      border: `1px solid ${C.border}`,
+      borderRadius: 12,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "10px 14px 8px",
+      borderBottom: `1px solid ${C.border}`,
+      background: "#0e1e2a"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: C.text
+    }
+  }, "\u6240\u6709\u6210\u7E3E")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      padding: "8px 14px",
+      borderBottom: `1px solid ${C.border}`,
+      background: "#0d1a24"
+    }
+  }, [["名稱", COL.name], ["截止日", COL.due], ["繳交時間", COL.submitted], ["狀態", COL.status], ["成績", COL.score]].map(([label, f]) => /*#__PURE__*/React.createElement("div", {
+    key: label,
+    style: {
+      flex: f,
+      fontSize: 9,
+      fontWeight: 700,
+      color: C.muted,
+      letterSpacing: .5
+    }
+  }, label))), exams.map((e, idx) => {
+    const hasScore = e.score !== null;
+    return /*#__PURE__*/React.createElement("div", {
+      key: e.id,
+      style: {
+        borderBottom: idx < exams.length - 1 ? `1px solid #132030` : "none"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        padding: "11px 14px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: COL.name,
+        paddingRight: 8
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 13,
+        fontWeight: 600,
+        color: hasScore ? C.text : C.muted,
+        lineHeight: 1.3
+      }
+    }, e.name)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: COL.due,
+        paddingRight: 4
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: C.muted
+      }
+    }, fmt(e.due))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: COL.submitted,
+        paddingRight: 4
+      }
+    }, e.submitted ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: C.muted
+      }
+    }, fmt(e.submitted)) : /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#2a3a4a"
+      }
+    }, "\u2014")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: COL.status
+      }
+    }, /*#__PURE__*/React.createElement(StatusBadge, {
+      status: e.status
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: COL.score,
+        textAlign: "right"
+      }
+    }, hasScore ? /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 14,
+        fontWeight: 800,
+        color: SCORE_COLOR
+      }
+    }, e.score, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: C.muted,
+        fontWeight: 400
+      }
+    }, " / ", e.outOf)) : /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 11,
+        color: "#2a3a4a"
+      }
+    }, "\u2014"))));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      margin: "12px 16px 16px",
+      background: C.card,
+      border: `1px solid ${C.border}`,
+      borderRadius: 12,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "10px 14px 8px",
+      borderBottom: `1px solid ${C.border}`,
+      background: "#0e1e2a"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: C.text
+    }
+  }, "\u6210\u7E3E\u52A0\u6B0A\u6BD4\u4F8B"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.muted,
+      marginTop: 2
+    }
+  }, "\u5404\u9805\u76EE\u4F9D\u6BD4\u4F8B\u8A08\u5165\u6700\u7D42\u6210\u7E3E")), weights.map((w, idx) => /*#__PURE__*/React.createElement("div", {
+    key: idx,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "10px 14px",
+      borderBottom: idx < weights.length - 1 ? `1px solid #132030` : "none",
+      background: w.isTotal ? "#0e1e2a" : "transparent"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13,
+      fontWeight: w.isTotal ? 700 : 400,
+      color: w.isTotal ? C.text : C.muted
+    }
+  }, w.group), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: w.isTotal ? C.amber : C.text
+    }
+  }, w.weight, "%")))));
+}
+
+
+function App() {
+  const [page, setPage] = useState("courses");
+  const [course, setCourse] = useState(null);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const ni = {
+    notifOpen,
+    setNotifOpen: v => setNotifOpen(typeof v === "function" ? v(notifOpen) : v)
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: "100vh",
+      background: C.bg,
+      color: C.text,
+      fontFamily: "'Noto Sans TC','PingFang TC',sans-serif",
+      paddingBottom: 40
+    },
+    onClick: () => notifOpen && setNotifOpen(false)
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation()
+  }, page === "courses" && /*#__PURE__*/React.createElement(CoursePage, _extends({}, ni, {
+    onAssignments: c => {
+      setCourse(c);
+      setPage("assignments");
+    },
+    onExams: c => {
+      setCourse(c);
+      setPage("exams");
+    }
+  })), page === "assignments" && course && /*#__PURE__*/React.createElement(CourseInnerPage, _extends({}, ni, {
+    course: course,
+    onBack: () => setPage("courses")
+  })), page === "exams" && course && /*#__PURE__*/React.createElement(ExamPage, _extends({}, ni, {
+    course: course,
+    onBack: () => setPage("courses")
+  }))));
+}
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>
