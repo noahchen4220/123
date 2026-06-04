@@ -3,2421 +3,126 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>21CS 課程系統 Demo</title>
+  <title>21CS 課程系統 Demo v5</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <style>* { box-sizing: border-box; margin: 0; padding: 0; } body { background: #0d1a24; font-family: "PingFang TC", "Noto Sans TC", sans-serif; } ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #0d1a24; } ::-webkit-scrollbar-thumb { background: #1a3040; border-radius: 99px; }</style>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d1a24; font-family: "PingFang TC", "Noto Sans TC", sans-serif; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0d1a24; }
+    ::-webkit-scrollbar-thumb { background: #1a3040; border-radius: 99px; }
+    @keyframes anchorPulse {
+      0% { box-shadow: 0 0 0 0 rgba(94,230,200,0.55); }
+      70% { box-shadow: 0 0 0 10px rgba(94,230,200,0); }
+      100% { box-shadow: 0 0 0 0 rgba(94,230,200,0); }
+    }
+    .anchor-hl { animation: anchorPulse 1.4s ease-out 2; border-color: #5ee6c8 !important; }
+  </style>
 </head>
 <body>
   <div id="root"></div>
   <script>
-    const { useState, useMemo } = React;
+    const { useState, useMemo, useRef, useEffect } = React;
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 
 const mockCourses = [{
-  id: 1,
-  name: "計算機概論",
-  code: "CS101",
-  start: "2026-02-23",
-  end: "2026-06-30",
-  status: "active",
-  progress: 62
+  id: 1, name: "計算機概論", code: "CS101", start: "2026-02-23", end: "2026-06-30", status: "active", progress: 62
 }, {
-  id: 2,
-  name: "資料結構",
-  code: "CS201",
-  start: "2025-09-01",
-  end: "2026-01-15",
-  status: "ended",
-  progress: 100
+  id: 2, name: "資料結構", code: "CS201", start: "2025-09-01", end: "2026-01-15", status: "ended", progress: 100
 }, {
-  id: 3,
-  name: "作業系統",
-  code: "CS301",
-  start: "2025-02-17",
-  end: "2025-06-20",
-  status: "ended",
-  progress: 100
+  id: 3, name: "作業系統", code: "CS301", start: "2025-02-17", end: "2025-06-20", status: "ended", progress: 100
 }, {
-  id: 4,
-  name: "離散數學",
-  code: "CS302",
-  start: "2024-09-02",
-  end: "2025-01-10",
-  status: "ended",
-  progress: 100
+  id: 4, name: "離散數學", code: "CS302", start: "2024-09-02", end: "2025-01-10", status: "ended", progress: 100
 }, {
-  id: 5,
-  name: "程式語言概論",
-  code: "CS303",
-  start: "2024-02-19",
-  end: "2024-06-14",
-  status: "ended",
-  progress: 100
+  id: 5, name: "程式語言概論", code: "CS303", start: "2024-02-19", end: "2024-06-14", status: "ended", progress: 100
 }];
 
-// Videos: 10 lessons, 7 watched. Names follow CH pattern.
-// Only course 1 (current) has content
 const mockCourseContent = {
   1: {
-    videos: [{
-      id: "v1",
-      ch: "CH 1.1",
-      title: "計算機概論導入",
-      duration: "18:24",
-      watched: true,
-      watchedAt: "2026-03-02"
-    }, {
-      id: "v2",
-      ch: "CH 1.2",
-      title: "計算機硬體架構",
-      duration: "22:10",
-      watched: true,
-      watchedAt: "2026-03-09"
-    }, {
-      id: "v3",
-      ch: "CH 1.3",
-      title: "計算機軟體架構",
-      duration: "31:05",
-      watched: true,
-      watchedAt: "2026-03-16"
-    }, {
-      id: "v4",
-      ch: "CH 2.1",
-      title: "數字系統與進位轉換",
-      duration: "27:48",
-      watched: true,
-      watchedAt: "2026-03-23"
-    }, {
-      id: "v5",
-      ch: "CH 2.2",
-      title: "補數與浮點數表示法",
-      duration: "35:12",
-      watched: true,
-      watchedAt: "2026-04-07"
-    }, {
-      id: "v6",
-      ch: "CH 3.1",
-      title: "布林代數基礎",
-      duration: "29:33",
-      watched: true,
-      watchedAt: "2026-04-21"
-    }, {
-      id: "v7",
-      ch: "CH 3.2",
-      title: "邏輯閘與電路設計",
-      duration: "33:00",
-      watched: true,
-      watchedAt: "2026-05-05"
-    }, {
-      id: "v8",
-      ch: "CH 4.1",
-      title: "組合邏輯電路",
-      duration: "25:47",
-      watched: false,
-      watchedAt: null
-    }],
-    assignments: [{
-      id: "r1",
-      title: "Assignment_CH01(1-1)",
-      label: "CH 1.1 計算機概論導入",
-      date: "2026-03-03",
-      note: "截止 2026-03-20 23:50",
-      content: "1 2 3 4 5\n6 7 8 9 10\n11 12 13 14 15"
-    }, {
-      id: "r2",
-      title: "Assignment_CH01(1-2)",
-      label: "CH 1.2 計算機硬體架構",
-      date: "2026-03-10",
-      note: "截止 2026-03-27 23:50",
-      content: "42 17 83\n29 56 74\n11 38 65"
-    }, {
-      id: "r3",
-      title: "Assignment_CH01(1-3)",
-      label: "CH 1.3 計算機軟體架構",
-      date: "2026-03-17",
-      note: "截止 2026-04-03 23:50",
-      content: "100 200 300\n400 500 600\n700 800 900"
-    }, {
-      id: "r4",
-      title: "Assignment_CH02(2-1)",
-      label: "CH 2.1 數字系統與進位轉換",
-      date: "2026-03-24",
-      note: "截止 2026-04-10 23:50",
-      content: "1010 1101 0110\n1001 0011 1110\n0101 1000 1111"
-    }, {
-      id: "r5",
-      title: "Assignment_CH02(2-2)",
-      label: "CH 2.2 補數與浮點數表示法",
-      date: "2026-04-08",
-      note: "截止 2026-04-25 23:50",
-      content: "3.14 2.71 1.41\n0.99 1.73 2.23\n4.12 5.66 7.07"
-    }, {
-      id: "r6",
-      title: "Assignment_CH03(3-1)",
-      label: "CH 3.1 布林代數基礎",
-      date: "2026-04-22",
-      note: "截止 2026-05-09 23:50",
-      content: "0 1 1 0\n1 0 0 1\n1 1 0 0"
-    }, {
-      id: "r7",
-      title: "Assignment_CH03(3-2)",
-      label: "CH 3.2 邏輯閘與電路設計",
-      date: "2026-05-06",
-      note: "截止 2026-05-23 23:50",
-      content: "8 16 32\n64 128 256\n512 1024 2048"
-    }, {
-      id: "r8",
-      title: "Assignment_CH04(4-1)",
-      label: "CH 4.1 組合邏輯電路",
-      date: "2026-05-16",
-      note: "截止 2026-06-05 23:50",
-      content: "Hello world"
-    }],
-    answers: [{
-      id: "a1",
-      title: "Assignment_CH01(1-1)_Answer",
-      label: "CH 1.1 計算機概論導入",
-      date: "2026-03-21",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a2",
-      title: "Assignment_CH01(1-2)_Answer",
-      label: "CH 1.2 計算機硬體架構",
-      date: "2026-03-28",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a3",
-      title: "Assignment_CH01(1-3)_Answer",
-      label: "CH 1.3 計算機軟體架構",
-      date: "2026-04-04",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a4",
-      title: "Assignment_CH02(2-1)_Answer",
-      label: "CH 2.1 數字系統與進位轉換",
-      date: "2026-04-11",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a5",
-      title: "Assignment_CH02(2-2)_Answer",
-      label: "CH 2.2 補數與浮點數表示法",
-      date: "2026-04-26",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a6",
-      title: "Assignment_CH03(3-1)_Answer",
-      label: "CH 3.1 布林代數基礎",
-      date: "2026-05-10",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a7",
-      title: "Assignment_CH03(3-2)_Answer",
-      label: "CH 3.2 邏輯閘與電路設計",
-      date: "2026-05-24",
-      note: "請對照評分標準自行檢討"
-    }]
-  },
-  2: {
-    videos: [{
-      id: "v1",
-      ch: "CH 1.1",
-      title: "陣列與鏈結串列",
-      duration: "20:15",
-      watched: true,
-      watchedAt: "2025-09-08"
-    }, {
-      id: "v2",
-      ch: "CH 1.2",
-      title: "堆疊與佇列",
-      duration: "24:30",
-      watched: true,
-      watchedAt: "2025-09-15"
-    }, {
-      id: "v3",
-      ch: "CH 2.1",
-      title: "樹狀結構基礎",
-      duration: "28:45",
-      watched: true,
-      watchedAt: "2025-09-22"
-    }, {
-      id: "v4",
-      ch: "CH 2.2",
-      title: "二元搜尋樹",
-      duration: "32:10",
-      watched: true,
-      watchedAt: "2025-10-06"
-    }, {
-      id: "v5",
-      ch: "CH 3.1",
-      title: "圖形結構與走訪",
-      duration: "26:55",
-      watched: true,
-      watchedAt: "2025-10-20"
-    }, {
-      id: "v6",
-      ch: "CH 3.2",
-      title: "最短路徑演算法",
-      duration: "34:20",
-      watched: true,
-      watchedAt: "2025-11-03"
-    }, {
-      id: "v7",
-      ch: "CH 4.1",
-      title: "排序演算法比較",
-      duration: "29:40",
-      watched: true,
-      watchedAt: "2025-11-17"
-    }, {
-      id: "v8",
-      ch: "CH 4.2",
-      title: "雜湊表與搜尋",
-      duration: "22:30",
-      watched: true,
-      watchedAt: "2025-12-01"
-    }],
-    assignments: [{
-      id: "r1",
-      title: "Assignment_CH01(1-1)",
-      label: "CH 1.1 陣列與鏈結串列",
-      date: "2025-09-08",
-      note: "截止 2025-09-25 23:50"
-    }, {
-      id: "r2",
-      title: "Assignment_CH01(1-2)",
-      label: "CH 1.2 堆疊與佇列",
-      date: "2025-09-15",
-      note: "截止 2025-10-02 23:50"
-    }, {
-      id: "r3",
-      title: "Assignment_CH02(2-1)",
-      label: "CH 2.1 樹狀結構基礎",
-      date: "2025-09-22",
-      note: "截止 2025-10-09 23:50"
-    }, {
-      id: "r4",
-      title: "Assignment_CH02(2-2)",
-      label: "CH 2.2 二元搜尋樹",
-      date: "2025-10-06",
-      note: "截止 2025-10-23 23:50"
-    }, {
-      id: "r5",
-      title: "Assignment_CH03(3-1)",
-      label: "CH 3.1 圖形結構與走訪",
-      date: "2025-10-20",
-      note: "截止 2025-11-06 23:50"
-    }, {
-      id: "r6",
-      title: "Assignment_CH03(3-2)",
-      label: "CH 3.2 最短路徑演算法",
-      date: "2025-11-03",
-      note: "截止 2025-11-20 23:50"
-    }, {
-      id: "r7",
-      title: "Assignment_CH04(4-1)",
-      label: "CH 4.1 排序演算法比較",
-      date: "2025-11-17",
-      note: "截止 2025-12-04 23:50"
-    }, {
-      id: "r8",
-      title: "Assignment_CH04(4-2)",
-      label: "CH 4.2 雜湊表與搜尋",
-      date: "2025-12-01",
-      note: "截止 2025-12-18 23:50"
-    }],
-    answers: [{
-      id: "a1",
-      title: "Assignment_CH01(1-1)_Answer",
-      label: "CH 1.1 陣列與鏈結串列",
-      date: "2025-09-26",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a2",
-      title: "Assignment_CH01(1-2)_Answer",
-      label: "CH 1.2 堆疊與佇列",
-      date: "2025-10-03",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a3",
-      title: "Assignment_CH02(2-1)_Answer",
-      label: "CH 2.1 樹狀結構基礎",
-      date: "2025-10-10",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a4",
-      title: "Assignment_CH02(2-2)_Answer",
-      label: "CH 2.2 二元搜尋樹",
-      date: "2025-10-24",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a5",
-      title: "Assignment_CH03(3-1)_Answer",
-      label: "CH 3.1 圖形結構與走訪",
-      date: "2025-11-07",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a6",
-      title: "Assignment_CH03(3-2)_Answer",
-      label: "CH 3.2 最短路徑演算法",
-      date: "2025-11-21",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a7",
-      title: "Assignment_CH04(4-1)_Answer",
-      label: "CH 4.1 排序演算法比較",
-      date: "2025-12-05",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a8",
-      title: "Assignment_CH04(4-2)_Answer",
-      label: "CH 4.2 雜湊表與搜尋",
-      date: "2025-12-19",
-      note: "請對照評分標準自行檢討"
-    }]
-  },
-  3: {
-    videos: [{
-      id: "v1",
-      ch: "CH 1.1",
-      title: "作業系統概論",
-      duration: "19:30",
-      watched: true,
-      watchedAt: "2025-02-24"
-    }, {
-      id: "v2",
-      ch: "CH 1.2",
-      title: "程序與執行緒",
-      duration: "25:15",
-      watched: true,
-      watchedAt: "2025-03-03"
-    }, {
-      id: "v3",
-      ch: "CH 2.1",
-      title: "CPU 排程演算法",
-      duration: "30:00",
-      watched: true,
-      watchedAt: "2025-03-17"
-    }, {
-      id: "v4",
-      ch: "CH 2.2",
-      title: "行程同步與死結",
-      duration: "33:45",
-      watched: true,
-      watchedAt: "2025-03-31"
-    }, {
-      id: "v5",
-      ch: "CH 3.1",
-      title: "記憶體管理基礎",
-      duration: "27:20",
-      watched: true,
-      watchedAt: "2025-04-14"
-    }, {
-      id: "v6",
-      ch: "CH 3.2",
-      title: "虛擬記憶體與分頁",
-      duration: "31:10",
-      watched: true,
-      watchedAt: "2025-04-28"
-    }, {
-      id: "v7",
-      ch: "CH 4.1",
-      title: "檔案系統結構",
-      duration: "24:50",
-      watched: true,
-      watchedAt: "2025-05-12"
-    }, {
-      id: "v8",
-      ch: "CH 4.2",
-      title: "磁碟排程與I/O管理",
-      duration: "28:35",
-      watched: true,
-      watchedAt: "2025-05-26"
-    }],
-    assignments: [{
-      id: "r1",
-      title: "Assignment_CH01(1-1)",
-      label: "CH 1.1 作業系統概論",
-      date: "2025-02-24",
-      note: "截止 2025-03-13 23:50"
-    }, {
-      id: "r2",
-      title: "Assignment_CH01(1-2)",
-      label: "CH 1.2 程序與執行緒",
-      date: "2025-03-03",
-      note: "截止 2025-03-20 23:50"
-    }, {
-      id: "r3",
-      title: "Assignment_CH02(2-1)",
-      label: "CH 2.1 CPU 排程演算法",
-      date: "2025-03-17",
-      note: "截止 2025-04-03 23:50"
-    }, {
-      id: "r4",
-      title: "Assignment_CH02(2-2)",
-      label: "CH 2.2 行程同步與死結",
-      date: "2025-03-31",
-      note: "截止 2025-04-17 23:50"
-    }, {
-      id: "r5",
-      title: "Assignment_CH03(3-1)",
-      label: "CH 3.1 記憶體管理基礎",
-      date: "2025-04-14",
-      note: "截止 2025-05-01 23:50"
-    }, {
-      id: "r6",
-      title: "Assignment_CH03(3-2)",
-      label: "CH 3.2 虛擬記憶體與分頁",
-      date: "2025-04-28",
-      note: "截止 2025-05-15 23:50"
-    }, {
-      id: "r7",
-      title: "Assignment_CH04(4-1)",
-      label: "CH 4.1 檔案系統結構",
-      date: "2025-05-12",
-      note: "截止 2025-05-29 23:50"
-    }, {
-      id: "r8",
-      title: "Assignment_CH04(4-2)",
-      label: "CH 4.2 磁碟排程與I/O",
-      date: "2025-05-26",
-      note: "截止 2025-06-12 23:50"
-    }],
-    answers: [{
-      id: "a1",
-      title: "Assignment_CH01(1-1)_Answer",
-      label: "CH 1.1 作業系統概論",
-      date: "2025-03-14",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a2",
-      title: "Assignment_CH01(1-2)_Answer",
-      label: "CH 1.2 程序與執行緒",
-      date: "2025-03-21",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a3",
-      title: "Assignment_CH02(2-1)_Answer",
-      label: "CH 2.1 CPU 排程演算法",
-      date: "2025-04-04",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a4",
-      title: "Assignment_CH02(2-2)_Answer",
-      label: "CH 2.2 行程同步與死結",
-      date: "2025-04-18",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a5",
-      title: "Assignment_CH03(3-1)_Answer",
-      label: "CH 3.1 記憶體管理基礎",
-      date: "2025-05-02",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a6",
-      title: "Assignment_CH03(3-2)_Answer",
-      label: "CH 3.2 虛擬記憶體與分頁",
-      date: "2025-05-16",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a7",
-      title: "Assignment_CH04(4-1)_Answer",
-      label: "CH 4.1 檔案系統結構",
-      date: "2025-05-30",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a8",
-      title: "Assignment_CH04(4-2)_Answer",
-      label: "CH 4.2 磁碟排程與I/O",
-      date: "2025-06-13",
-      note: "請對照評分標準自行檢討"
-    }]
-  },
-  4: {
-    videos: [{
-      id: "v1",
-      ch: "CH 1.1",
-      title: "集合論基礎",
-      duration: "21:00",
-      watched: true,
-      watchedAt: "2024-09-09"
-    }, {
-      id: "v2",
-      ch: "CH 1.2",
-      title: "命題邏輯",
-      duration: "26:30",
-      watched: true,
-      watchedAt: "2024-09-16"
-    }, {
-      id: "v3",
-      ch: "CH 2.1",
-      title: "謂詞邏輯",
-      duration: "29:15",
-      watched: true,
-      watchedAt: "2024-09-30"
-    }, {
-      id: "v4",
-      ch: "CH 2.2",
-      title: "數學歸納法",
-      duration: "23:40",
-      watched: true,
-      watchedAt: "2024-10-14"
-    }, {
-      id: "v5",
-      ch: "CH 3.1",
-      title: "計數原理與排列組合",
-      duration: "31:25",
-      watched: true,
-      watchedAt: "2024-10-28"
-    }, {
-      id: "v6",
-      ch: "CH 3.2",
-      title: "圖論入門",
-      duration: "27:55",
-      watched: true,
-      watchedAt: "2024-11-11"
-    }, {
-      id: "v7",
-      ch: "CH 4.1",
-      title: "樹與生成樹",
-      duration: "25:10",
-      watched: true,
-      watchedAt: "2024-11-25"
-    }, {
-      id: "v8",
-      ch: "CH 4.2",
-      title: "代數結構概論",
-      duration: "30:45",
-      watched: true,
-      watchedAt: "2024-12-09"
-    }],
-    assignments: [{
-      id: "r1",
-      title: "Assignment_CH01(1-1)",
-      label: "CH 1.1 集合論基礎",
-      date: "2024-09-09",
-      note: "截止 2024-09-26 23:50"
-    }, {
-      id: "r2",
-      title: "Assignment_CH01(1-2)",
-      label: "CH 1.2 命題邏輯",
-      date: "2024-09-16",
-      note: "截止 2024-10-03 23:50"
-    }, {
-      id: "r3",
-      title: "Assignment_CH02(2-1)",
-      label: "CH 2.1 謂詞邏輯",
-      date: "2024-09-30",
-      note: "截止 2024-10-17 23:50"
-    }, {
-      id: "r4",
-      title: "Assignment_CH02(2-2)",
-      label: "CH 2.2 數學歸納法",
-      date: "2024-10-14",
-      note: "截止 2024-10-31 23:50"
-    }, {
-      id: "r5",
-      title: "Assignment_CH03(3-1)",
-      label: "CH 3.1 計數原理與排列組合",
-      date: "2024-10-28",
-      note: "截止 2024-11-14 23:50"
-    }, {
-      id: "r6",
-      title: "Assignment_CH03(3-2)",
-      label: "CH 3.2 圖論入門",
-      date: "2024-11-11",
-      note: "截止 2024-11-28 23:50"
-    }, {
-      id: "r7",
-      title: "Assignment_CH04(4-1)",
-      label: "CH 4.1 樹與生成樹",
-      date: "2024-11-25",
-      note: "截止 2024-12-12 23:50"
-    }, {
-      id: "r8",
-      title: "Assignment_CH04(4-2)",
-      label: "CH 4.2 代數結構概論",
-      date: "2024-12-09",
-      note: "截止 2024-12-26 23:50"
-    }],
-    answers: [{
-      id: "a1",
-      title: "Assignment_CH01(1-1)_Answer",
-      label: "CH 1.1 集合論基礎",
-      date: "2024-09-27",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a2",
-      title: "Assignment_CH01(1-2)_Answer",
-      label: "CH 1.2 命題邏輯",
-      date: "2024-10-04",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a3",
-      title: "Assignment_CH02(2-1)_Answer",
-      label: "CH 2.1 謂詞邏輯",
-      date: "2024-10-18",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a4",
-      title: "Assignment_CH02(2-2)_Answer",
-      label: "CH 2.2 數學歸納法",
-      date: "2024-11-01",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a5",
-      title: "Assignment_CH03(3-1)_Answer",
-      label: "CH 3.1 計數原理與排列組合",
-      date: "2024-11-15",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a6",
-      title: "Assignment_CH03(3-2)_Answer",
-      label: "CH 3.2 圖論入門",
-      date: "2024-11-29",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a7",
-      title: "Assignment_CH04(4-1)_Answer",
-      label: "CH 4.1 樹與生成樹",
-      date: "2024-12-13",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a8",
-      title: "Assignment_CH04(4-2)_Answer",
-      label: "CH 4.2 代數結構概論",
-      date: "2024-12-27",
-      note: "請對照評分標準自行檢討"
-    }]
-  },
-  5: {
-    videos: [{
-      id: "v1",
-      ch: "CH 1.1",
-      title: "程式語言歷史與分類",
-      duration: "18:50",
-      watched: true,
-      watchedAt: "2024-02-26"
-    }, {
-      id: "v2",
-      ch: "CH 1.2",
-      title: "語法與語意基礎",
-      duration: "23:20",
-      watched: true,
-      watchedAt: "2024-03-04"
-    }, {
-      id: "v3",
-      ch: "CH 2.1",
-      title: "變數與型別系統",
-      duration: "27:10",
-      watched: true,
-      watchedAt: "2024-03-18"
-    }, {
-      id: "v4",
-      ch: "CH 2.2",
-      title: "控制流程與例外處理",
-      duration: "31:00",
-      watched: true,
-      watchedAt: "2024-04-01"
-    }, {
-      id: "v5",
-      ch: "CH 3.1",
-      title: "函式與閉包",
-      duration: "29:30",
-      watched: true,
-      watchedAt: "2024-04-15"
-    }, {
-      id: "v6",
-      ch: "CH 3.2",
-      title: "物件導向程式設計",
-      duration: "35:00",
-      watched: true,
-      watchedAt: "2024-04-29"
-    }, {
-      id: "v7",
-      ch: "CH 4.1",
-      title: "函數式程式設計",
-      duration: "26:45",
-      watched: true,
-      watchedAt: "2024-05-13"
-    }, {
-      id: "v8",
-      ch: "CH 4.2",
-      title: "並行與並發程式設計",
-      duration: "32:20",
-      watched: true,
-      watchedAt: "2024-05-27"
-    }],
-    assignments: [{
-      id: "r1",
-      title: "Assignment_CH01(1-1)",
-      label: "CH 1.1 程式語言歷史與分類",
-      date: "2024-02-26",
-      note: "截止 2024-03-14 23:50"
-    }, {
-      id: "r2",
-      title: "Assignment_CH01(1-2)",
-      label: "CH 1.2 語法與語意基礎",
-      date: "2024-03-04",
-      note: "截止 2024-03-21 23:50"
-    }, {
-      id: "r3",
-      title: "Assignment_CH02(2-1)",
-      label: "CH 2.1 變數與型別系統",
-      date: "2024-03-18",
-      note: "截止 2024-04-04 23:50"
-    }, {
-      id: "r4",
-      title: "Assignment_CH02(2-2)",
-      label: "CH 2.2 控制流程與例外處理",
-      date: "2024-04-01",
-      note: "截止 2024-04-18 23:50"
-    }, {
-      id: "r5",
-      title: "Assignment_CH03(3-1)",
-      label: "CH 3.1 函式與閉包",
-      date: "2024-04-15",
-      note: "截止 2024-05-02 23:50"
-    }, {
-      id: "r6",
-      title: "Assignment_CH03(3-2)",
-      label: "CH 3.2 物件導向程式設計",
-      date: "2024-04-29",
-      note: "截止 2024-05-16 23:50"
-    }, {
-      id: "r7",
-      title: "Assignment_CH04(4-1)",
-      label: "CH 4.1 函數式程式設計",
-      date: "2024-05-13",
-      note: "截止 2024-05-30 23:50"
-    }, {
-      id: "r8",
-      title: "Assignment_CH04(4-2)",
-      label: "CH 4.2 並行與並發程式設計",
-      date: "2024-05-27",
-      note: "截止 2024-06-13 23:50"
-    }],
-    answers: [{
-      id: "a1",
-      title: "Assignment_CH01(1-1)_Answer",
-      label: "CH 1.1 程式語言歷史與分類",
-      date: "2024-03-15",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a2",
-      title: "Assignment_CH01(1-2)_Answer",
-      label: "CH 1.2 語法與語意基礎",
-      date: "2024-03-22",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a3",
-      title: "Assignment_CH02(2-1)_Answer",
-      label: "CH 2.1 變數與型別系統",
-      date: "2024-04-05",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a4",
-      title: "Assignment_CH02(2-2)_Answer",
-      label: "CH 2.2 控制流程與例外處理",
-      date: "2024-04-19",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a5",
-      title: "Assignment_CH03(3-1)_Answer",
-      label: "CH 3.1 函式與閉包",
-      date: "2024-05-03",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a6",
-      title: "Assignment_CH03(3-2)_Answer",
-      label: "CH 3.2 物件導向程式設計",
-      date: "2024-05-17",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a7",
-      title: "Assignment_CH04(4-1)_Answer",
-      label: "CH 4.1 函數式程式設計",
-      date: "2024-05-31",
-      note: "請對照評分標準自行檢討"
-    }, {
-      id: "a8",
-      title: "Assignment_CH04(4-2)_Answer",
-      label: "CH 4.2 並行與並發程式設計",
-      date: "2024-06-14",
-      note: "請對照評分標準自行檢討"
-    }]
+    videos: [
+      { id: "v1", ch: "CH 1.1", title: "計算機概論導入", duration: "18:24", watched: true, watchedAt: "2026-03-02" },
+      { id: "v2", ch: "CH 1.2", title: "計算機硬體架構", duration: "22:10", watched: true, watchedAt: "2026-03-09" },
+      { id: "v3", ch: "CH 1.3", title: "計算機軟體架構", duration: "31:05", watched: true, watchedAt: "2026-03-16" },
+      { id: "v4", ch: "CH 2.1", title: "數字系統與進位轉換", duration: "27:48", watched: true, watchedAt: "2026-03-23" },
+      { id: "v5", ch: "CH 2.2", title: "補數與浮點數表示法", duration: "35:12", watched: true, watchedAt: "2026-04-07" },
+      { id: "v6", ch: "CH 3.1", title: "布林代數基礎", duration: "29:33", watched: true, watchedAt: "2026-04-21" },
+      { id: "v7", ch: "CH 3.2", title: "邏輯閘與電路設計", duration: "33:00", watched: true, watchedAt: "2026-05-05" },
+      { id: "v8", ch: "CH 4.1", title: "組合邏輯電路", duration: "25:47", watched: false, watchedAt: null }
+    ],
+    assignments: [
+      { id: "r1", title: "Assignment_CH01(1-1)", label: "CH 1.1 計算機概論導入", date: "2026-03-03", note: "截止 2026-03-20 23:50", content: "1 2 3 4 5\n6 7 8 9 10\n11 12 13 14 15" },
+      { id: "r2", title: "Assignment_CH01(1-2)", label: "CH 1.2 計算機硬體架構", date: "2026-03-10", note: "截止 2026-03-27 23:50", content: "42 17 83\n29 56 74\n11 38 65" },
+      { id: "r3", title: "Assignment_CH01(1-3)", label: "CH 1.3 計算機軟體架構", date: "2026-03-17", note: "截止 2026-04-03 23:50", content: "100 200 300\n400 500 600\n700 800 900" },
+      { id: "r4", title: "Assignment_CH02(2-1)", label: "CH 2.1 數字系統與進位轉換", date: "2026-03-24", note: "截止 2026-04-10 23:50", content: "1010 1101 0110\n1001 0011 1110\n0101 1000 1111" },
+      { id: "r5", title: "Assignment_CH02(2-2)", label: "CH 2.2 補數與浮點數表示法", date: "2026-04-08", note: "截止 2026-04-25 23:50", content: "3.14 2.71 1.41\n0.99 1.73 2.23\n4.12 5.66 7.07" },
+      { id: "r6", title: "Assignment_CH03(3-1)", label: "CH 3.1 布林代數基礎", date: "2026-04-22", note: "截止 2026-05-09 23:50", content: "0 1 1 0\n1 0 0 1\n1 1 0 0" },
+      { id: "r7", title: "Assignment_CH03(3-2)", label: "CH 3.2 邏輯閘與電路設計", date: "2026-05-06", note: "截止 2026-05-23 23:50", content: "8 16 32\n64 128 256\n512 1024 2048" },
+      { id: "r8", title: "Assignment_CH04(4-1)", label: "CH 4.1 組合邏輯電路", date: "2026-05-16", note: "截止 2026-06-05 23:50", content: "Hello world" }
+    ],
+    answers: [
+      { id: "a1", title: "Assignment_CH01(1-1)_Answer", label: "CH 1.1 計算機概論導入", date: "2026-03-21", note: "請對照評分標準自行檢討" },
+      { id: "a2", title: "Assignment_CH01(1-2)_Answer", label: "CH 1.2 計算機硬體架構", date: "2026-03-28", note: "請對照評分標準自行檢討" },
+      { id: "a3", title: "Assignment_CH01(1-3)_Answer", label: "CH 1.3 計算機軟體架構", date: "2026-04-04", note: "請對照評分標準自行檢討" },
+      { id: "a4", title: "Assignment_CH02(2-1)_Answer", label: "CH 2.1 數字系統與進位轉換", date: "2026-04-11", note: "請對照評分標準自行檢討" },
+      { id: "a5", title: "Assignment_CH02(2-2)_Answer", label: "CH 2.2 補數與浮點數表示法", date: "2026-04-26", note: "請對照評分標準自行檢討" },
+      { id: "a6", title: "Assignment_CH03(3-1)_Answer", label: "CH 3.1 布林代數基礎", date: "2026-05-10", note: "請對照評分標準自行檢討" },
+      { id: "a7", title: "Assignment_CH03(3-2)_Answer", label: "CH 3.2 邏輯閘與電路設計", date: "2026-05-24", note: "請對照評分標準自行檢討" }
+    ]
   }
 };
 
-// Assignments: based on watched videos (v1–v7 watched → 7 assignments)
 const mockAssignments = {
-  1: [{
-    id: "a1",
-    ch: "CH 1.1",
-    label: "Assignment_CH01(1-1)",
-    name: "計算機概論導入",
-    start: "2026-03-03",
-    end: "2026-03-20 23:50",
-    submitted: true,
-    score: 95,
-    classAvg: 78.4,
-    classMax: 100,
-    classMin: 32,
-    dist: [28, 35, 27, 16, 12],
-    total: 142,
-    submitCnt: 118
-  }, {
-    id: "a2",
-    ch: "CH 1.2",
-    label: "Assignment_CH01(1-2)",
-    name: "計算機硬體架構",
-    start: "2026-03-10",
-    end: "2026-03-27 23:50",
-    submitted: true,
-    score: 88,
-    classAvg: 75.2,
-    classMax: 100,
-    classMin: 28,
-    dist: [22, 30, 30, 18, 18],
-    total: 142,
-    submitCnt: 115
-  }, {
-    id: "a3",
-    ch: "CH 1.3",
-    label: "Assignment_CH01(1-3)",
-    name: "計算機軟體架構",
-    start: "2026-03-17",
-    end: "2026-04-03 23:50",
-    submitted: true,
-    score: 92,
-    classAvg: 80.1,
-    classMax: 100,
-    classMin: 35,
-    dist: [25, 38, 27, 10, 12],
-    total: 142,
-    submitCnt: 120
-  }, {
-    id: "a4",
-    ch: "CH 2.1",
-    label: "Assignment_CH02(2-1)",
-    name: "數字系統與進位轉換",
-    start: "2026-03-24",
-    end: "2026-04-10 23:50",
-    submitted: true,
-    score: 78,
-    classAvg: 70.3,
-    classMax: 99,
-    classMin: 20,
-    dist: [18, 28, 32, 22, 15],
-    total: 142,
-    submitCnt: 110
-  }, {
-    id: "a5",
-    ch: "CH 2.2",
-    label: "Assignment_CH02(2-2)",
-    name: "補數與浮點數表示法",
-    start: "2026-04-08",
-    end: "2026-04-25 23:50",
-    submitted: true,
-    score: 85,
-    classAvg: 72.8,
-    classMax: 100,
-    classMin: 30,
-    dist: [20, 32, 28, 16, 14],
-    total: 142,
-    submitCnt: 116
-  }, {
-    id: "a6",
-    ch: "CH 3.1",
-    label: "Assignment_CH03(3-1)",
-    name: "布林代數基礎",
-    start: "2026-04-22",
-    end: "2026-05-09 23:50",
-    submitted: false,
-    score: null,
-    classAvg: null,
-    classMax: null,
-    classMin: null,
-    dist: null,
-    total: 142,
-    submitCnt: 0
-  }, {
-    id: "a7",
-    ch: "CH 3.2",
-    label: "Assignment_CH03(3-2)",
-    name: "邏輯閘與電路設計",
-    start: "2026-05-06",
-    end: "2026-05-23 23:50",
-    submitted: false,
-    score: null,
-    classAvg: null,
-    classMax: null,
-    classMin: null,
-    dist: null,
-    total: 142,
-    submitCnt: 0
-  }],
-  2: [{
-    id: "a1",
-    ch: "CH 1.1",
-    label: "Assignment_CH01(1-1)",
-    name: "陣列與鏈結串列",
-    start: "2025-09-08",
-    end: "2025-09-25 23:50",
-    submitted: true,
-    score: 91,
-    classAvg: 77.0,
-    classMax: 100,
-    classMin: 30,
-    dist: [30, 32, 24, 14, 12],
-    total: 138,
-    submitCnt: 125
-  }, {
-    id: "a2",
-    ch: "CH 1.2",
-    label: "Assignment_CH01(1-2)",
-    name: "堆疊與佇列",
-    start: "2025-09-15",
-    end: "2025-10-02 23:50",
-    submitted: true,
-    score: 85,
-    classAvg: 74.5,
-    classMax: 100,
-    classMin: 25,
-    dist: [24, 30, 28, 16, 12],
-    total: 138,
-    submitCnt: 122
-  }, {
-    id: "a3",
-    ch: "CH 2.1",
-    label: "Assignment_CH02(2-1)",
-    name: "樹狀結構基礎",
-    start: "2025-09-22",
-    end: "2025-10-09 23:50",
-    submitted: true,
-    score: 88,
-    classAvg: 76.2,
-    classMax: 99,
-    classMin: 28,
-    dist: [26, 34, 26, 12, 10],
-    total: 138,
-    submitCnt: 120
-  }, {
-    id: "a4",
-    ch: "CH 2.2",
-    label: "Assignment_CH02(2-2)",
-    name: "二元搜尋樹",
-    start: "2025-10-06",
-    end: "2025-10-23 23:50",
-    submitted: true,
-    score: 79,
-    classAvg: 69.8,
-    classMax: 100,
-    classMin: 22,
-    dist: [18, 28, 32, 20, 14],
-    total: 138,
-    submitCnt: 118
-  }, {
-    id: "a5",
-    ch: "CH 3.1",
-    label: "Assignment_CH03(3-1)",
-    name: "圖形結構與走訪",
-    start: "2025-10-20",
-    end: "2025-11-06 23:50",
-    submitted: true,
-    score: 94,
-    classAvg: 80.3,
-    classMax: 100,
-    classMin: 35,
-    dist: [32, 36, 22, 8, 8],
-    total: 138,
-    submitCnt: 130
-  }, {
-    id: "a6",
-    ch: "CH 3.2",
-    label: "Assignment_CH03(3-2)",
-    name: "最短路徑演算法",
-    start: "2025-11-03",
-    end: "2025-11-20 23:50",
-    submitted: true,
-    score: 87,
-    classAvg: 73.1,
-    classMax: 100,
-    classMin: 20,
-    dist: [22, 32, 28, 14, 12],
-    total: 138,
-    submitCnt: 126
-  }, {
-    id: "a7",
-    ch: "CH 4.1",
-    label: "Assignment_CH04(4-1)",
-    name: "排序演算法比較",
-    start: "2025-11-17",
-    end: "2025-12-04 23:50",
-    submitted: true,
-    score: 90,
-    classAvg: 78.6,
-    classMax: 100,
-    classMin: 30,
-    dist: [28, 34, 24, 10, 10],
-    total: 138,
-    submitCnt: 128
-  }, {
-    id: "a8",
-    ch: "CH 4.2",
-    label: "Assignment_CH04(4-2)",
-    name: "雜湊表與搜尋",
-    start: "2025-12-01",
-    end: "2025-12-18 23:50",
-    submitted: true,
-    score: 83,
-    classAvg: 72.4,
-    classMax: 98,
-    classMin: 25,
-    dist: [20, 30, 30, 12, 10],
-    total: 138,
-    submitCnt: 124
-  }],
-  3: [{
-    id: "a1",
-    ch: "CH 1.1",
-    label: "Assignment_CH01(1-1)",
-    name: "作業系統概論",
-    start: "2025-02-24",
-    end: "2025-03-13 23:50",
-    submitted: true,
-    score: 88,
-    classAvg: 75.5,
-    classMax: 100,
-    classMin: 28,
-    dist: [24, 32, 26, 14, 12],
-    total: 145,
-    submitCnt: 132
-  }, {
-    id: "a2",
-    ch: "CH 1.2",
-    label: "Assignment_CH01(1-2)",
-    name: "程序與執行緒",
-    start: "2025-03-03",
-    end: "2025-03-20 23:50",
-    submitted: true,
-    score: 82,
-    classAvg: 71.2,
-    classMax: 99,
-    classMin: 20,
-    dist: [18, 28, 32, 18, 12],
-    total: 145,
-    submitCnt: 130
-  }, {
-    id: "a3",
-    ch: "CH 2.1",
-    label: "Assignment_CH02(2-1)",
-    name: "CPU 排程演算法",
-    start: "2025-03-17",
-    end: "2025-04-03 23:50",
-    submitted: true,
-    score: 90,
-    classAvg: 78.8,
-    classMax: 100,
-    classMin: 32,
-    dist: [28, 34, 24, 10, 10],
-    total: 145,
-    submitCnt: 135
-  }, {
-    id: "a4",
-    ch: "CH 2.2",
-    label: "Assignment_CH02(2-2)",
-    name: "行程同步與死結",
-    start: "2025-03-31",
-    end: "2025-04-17 23:50",
-    submitted: true,
-    score: 75,
-    classAvg: 68.4,
-    classMax: 98,
-    classMin: 18,
-    dist: [14, 24, 34, 18, 12],
-    total: 145,
-    submitCnt: 128
-  }, {
-    id: "a5",
-    ch: "CH 3.1",
-    label: "Assignment_CH03(3-1)",
-    name: "記憶體管理基礎",
-    start: "2025-04-14",
-    end: "2025-05-01 23:50",
-    submitted: true,
-    score: 93,
-    classAvg: 80.1,
-    classMax: 100,
-    classMin: 35,
-    dist: [30, 36, 22, 8, 6],
-    total: 145,
-    submitCnt: 138
-  }, {
-    id: "a6",
-    ch: "CH 3.2",
-    label: "Assignment_CH03(3-2)",
-    name: "虛擬記憶體與分頁",
-    start: "2025-04-28",
-    end: "2025-05-15 23:50",
-    submitted: true,
-    score: 86,
-    classAvg: 74.6,
-    classMax: 100,
-    classMin: 26,
-    dist: [22, 32, 28, 14, 10],
-    total: 145,
-    submitCnt: 134
-  }, {
-    id: "a7",
-    ch: "CH 4.1",
-    label: "Assignment_CH04(4-1)",
-    name: "檔案系統結構",
-    start: "2025-05-12",
-    end: "2025-05-29 23:50",
-    submitted: true,
-    score: 89,
-    classAvg: 77.3,
-    classMax: 100,
-    classMin: 30,
-    dist: [26, 34, 26, 10, 8],
-    total: 145,
-    submitCnt: 136
-  }, {
-    id: "a8",
-    ch: "CH 4.2",
-    label: "Assignment_CH04(4-2)",
-    name: "磁碟排程與I/O管理",
-    start: "2025-05-26",
-    end: "2025-06-12 23:50",
-    submitted: true,
-    score: 84,
-    classAvg: 73.0,
-    classMax: 99,
-    classMin: 22,
-    dist: [20, 30, 30, 14, 10],
-    total: 145,
-    submitCnt: 130
-  }],
-  4: [{
-    id: "a1",
-    ch: "CH 1.1",
-    label: "Assignment_CH01(1-1)",
-    name: "集合論基礎",
-    start: "2024-09-09",
-    end: "2024-09-26 23:50",
-    submitted: true,
-    score: 92,
-    classAvg: 79.2,
-    classMax: 100,
-    classMin: 35,
-    dist: [28, 36, 22, 10, 8],
-    total: 130,
-    submitCnt: 118
-  }, {
-    id: "a2",
-    ch: "CH 1.2",
-    label: "Assignment_CH01(1-2)",
-    name: "命題邏輯",
-    start: "2024-09-16",
-    end: "2024-10-03 23:50",
-    submitted: true,
-    score: 86,
-    classAvg: 73.8,
-    classMax: 100,
-    classMin: 25,
-    dist: [22, 30, 28, 14, 12],
-    total: 130,
-    submitCnt: 116
-  }, {
-    id: "a3",
-    ch: "CH 2.1",
-    label: "Assignment_CH02(2-1)",
-    name: "謂詞邏輯",
-    start: "2024-09-30",
-    end: "2024-10-17 23:50",
-    submitted: true,
-    score: 78,
-    classAvg: 67.5,
-    classMax: 98,
-    classMin: 18,
-    dist: [14, 24, 34, 20, 14],
-    total: 130,
-    submitCnt: 112
-  }, {
-    id: "a4",
-    ch: "CH 2.2",
-    label: "Assignment_CH02(2-2)",
-    name: "數學歸納法",
-    start: "2024-10-14",
-    end: "2024-10-31 23:50",
-    submitted: true,
-    score: 88,
-    classAvg: 76.1,
-    classMax: 100,
-    classMin: 28,
-    dist: [24, 32, 28, 12, 10],
-    total: 130,
-    submitCnt: 120
-  }, {
-    id: "a5",
-    ch: "CH 3.1",
-    label: "Assignment_CH03(3-1)",
-    name: "計數原理與排列組合",
-    start: "2024-10-28",
-    end: "2024-11-14 23:50",
-    submitted: true,
-    score: 95,
-    classAvg: 81.4,
-    classMax: 100,
-    classMin: 38,
-    dist: [32, 36, 20, 8, 6],
-    total: 130,
-    submitCnt: 122
-  }, {
-    id: "a6",
-    ch: "CH 3.2",
-    label: "Assignment_CH03(3-2)",
-    name: "圖論入門",
-    start: "2024-11-11",
-    end: "2024-11-28 23:50",
-    submitted: true,
-    score: 82,
-    classAvg: 70.9,
-    classMax: 99,
-    classMin: 22,
-    dist: [18, 28, 32, 16, 12],
-    total: 130,
-    submitCnt: 118
-  }, {
-    id: "a7",
-    ch: "CH 4.1",
-    label: "Assignment_CH04(4-1)",
-    name: "樹與生成樹",
-    start: "2024-11-25",
-    end: "2024-12-12 23:50",
-    submitted: true,
-    score: 89,
-    classAvg: 77.6,
-    classMax: 100,
-    classMin: 30,
-    dist: [26, 34, 26, 10, 8],
-    total: 130,
-    submitCnt: 120
-  }, {
-    id: "a8",
-    ch: "CH 4.2",
-    label: "Assignment_CH04(4-2)",
-    name: "代數結構概論",
-    start: "2024-12-09",
-    end: "2024-12-26 23:50",
-    submitted: true,
-    score: 85,
-    classAvg: 74.2,
-    classMax: 100,
-    classMin: 26,
-    dist: [22, 30, 30, 12, 10],
-    total: 130,
-    submitCnt: 116
-  }],
-  5: [{
-    id: "a1",
-    ch: "CH 1.1",
-    label: "Assignment_CH01(1-1)",
-    name: "程式語言歷史與分類",
-    start: "2024-02-26",
-    end: "2024-03-14 23:50",
-    submitted: true,
-    score: 90,
-    classAvg: 78.0,
-    classMax: 100,
-    classMin: 32,
-    dist: [26, 34, 24, 12, 10],
-    total: 128,
-    submitCnt: 115
-  }, {
-    id: "a2",
-    ch: "CH 1.2",
-    label: "Assignment_CH01(1-2)",
-    name: "語法與語意基礎",
-    start: "2024-03-04",
-    end: "2024-03-21 23:50",
-    submitted: true,
-    score: 84,
-    classAvg: 72.5,
-    classMax: 99,
-    classMin: 24,
-    dist: [20, 28, 32, 14, 12],
-    total: 128,
-    submitCnt: 112
-  }, {
-    id: "a3",
-    ch: "CH 2.1",
-    label: "Assignment_CH02(2-1)",
-    name: "變數與型別系統",
-    start: "2024-03-18",
-    end: "2024-04-04 23:50",
-    submitted: true,
-    score: 87,
-    classAvg: 75.3,
-    classMax: 100,
-    classMin: 28,
-    dist: [24, 32, 26, 12, 10],
-    total: 128,
-    submitCnt: 118
-  }, {
-    id: "a4",
-    ch: "CH 2.2",
-    label: "Assignment_CH02(2-2)",
-    name: "控制流程與例外處理",
-    start: "2024-04-01",
-    end: "2024-04-18 23:50",
-    submitted: true,
-    score: 79,
-    classAvg: 69.1,
-    classMax: 98,
-    classMin: 20,
-    dist: [16, 26, 32, 18, 12],
-    total: 128,
-    submitCnt: 110
-  }, {
-    id: "a5",
-    ch: "CH 3.1",
-    label: "Assignment_CH03(3-1)",
-    name: "函式與閉包",
-    start: "2024-04-15",
-    end: "2024-05-02 23:50",
-    submitted: true,
-    score: 92,
-    classAvg: 79.8,
-    classMax: 100,
-    classMin: 34,
-    dist: [28, 36, 22, 10, 8],
-    total: 128,
-    submitCnt: 120
-  }, {
-    id: "a6",
-    ch: "CH 3.2",
-    label: "Assignment_CH03(3-2)",
-    name: "物件導向程式設計",
-    start: "2024-04-29",
-    end: "2024-05-16 23:50",
-    submitted: true,
-    score: 86,
-    classAvg: 74.2,
-    classMax: 100,
-    classMin: 26,
-    dist: [22, 30, 28, 14, 10],
-    total: 128,
-    submitCnt: 116
-  }, {
-    id: "a7",
-    ch: "CH 4.1",
-    label: "Assignment_CH04(4-1)",
-    name: "函數式程式設計",
-    start: "2024-05-13",
-    end: "2024-05-30 23:50",
-    submitted: true,
-    score: 88,
-    classAvg: 76.8,
-    classMax: 100,
-    classMin: 30,
-    dist: [24, 34, 26, 12, 8],
-    total: 128,
-    submitCnt: 118
-  }, {
-    id: "a8",
-    ch: "CH 4.2",
-    label: "Assignment_CH04(4-2)",
-    name: "並行與並發程式設計",
-    start: "2024-05-27",
-    end: "2024-06-13 23:50",
-    submitted: true,
-    score: 83,
-    classAvg: 72.0,
-    classMax: 98,
-    classMin: 24,
-    dist: [20, 28, 32, 14, 10],
-    total: 128,
-    submitCnt: 114
-  }]
+  1: [
+    { id: "a1", ch: "CH 1.1", label: "Assignment_CH01(1-1)", name: "計算機概論導入", start: "2026-03-03", end: "2026-03-20 23:50", submitted: true, score: 95 },
+    { id: "a2", ch: "CH 1.2", label: "Assignment_CH01(1-2)", name: "計算機硬體架構", start: "2026-03-10", end: "2026-03-27 23:50", submitted: true, score: 88 },
+    { id: "a3", ch: "CH 1.3", label: "Assignment_CH01(1-3)", name: "計算機軟體架構", start: "2026-03-17", end: "2026-04-03 23:50", submitted: true, score: 92 },
+    { id: "a4", ch: "CH 2.1", label: "Assignment_CH02(2-1)", name: "數字系統與進位轉換", start: "2026-03-24", end: "2026-04-10 23:50", submitted: true, score: 78 },
+    { id: "a5", ch: "CH 2.2", label: "Assignment_CH02(2-2)", name: "補數與浮點數表示法", start: "2026-04-08", end: "2026-04-25 23:50", submitted: true, score: 85 },
+    { id: "a6", ch: "CH 3.1", label: "Assignment_CH03(3-1)", name: "布林代數基礎", start: "2026-04-22", end: "2026-05-09 23:50", submitted: false, score: null },
+    { id: "a7", ch: "CH 3.2", label: "Assignment_CH03(3-2)", name: "邏輯閘與電路設計", start: "2026-05-06", end: "2026-05-23 23:50", submitted: false, score: null }
+  ]
 };
+
 const mockGradeWeights = {
-  1: [{
-    group: "討論與出席",
-    weight: 10
-  }, {
-    group: "程式作業",
-    weight: 20
-  }, {
-    group: "期中考",
-    weight: 35
-  }, {
-    group: "期末考",
-    weight: 35
-  }, {
-    group: "加分題",
-    weight: 5
-  }, {
-    group: "總計",
-    weight: 105,
-    isTotal: true
-  }],
-  2: [{
-    group: "程式作業",
-    weight: 30
-  }, {
-    group: "Quiz",
-    weight: 10
-  }, {
-    group: "期中考",
-    weight: 30
-  }, {
-    group: "期末考",
-    weight: 30
-  }, {
-    group: "總計",
-    weight: 100,
-    isTotal: true
-  }],
-  3: [{
-    group: "程式作業",
-    weight: 25
-  }, {
-    group: "Quiz",
-    weight: 15
-  }, {
-    group: "期中考",
-    weight: 30
-  }, {
-    group: "期末考",
-    weight: 30
-  }, {
-    group: "總計",
-    weight: 100,
-    isTotal: true
-  }],
-  4: [{
-    group: "書面作業",
-    weight: 20
-  }, {
-    group: "Quiz",
-    weight: 20
-  }, {
-    group: "期中考",
-    weight: 30
-  }, {
-    group: "期末考",
-    weight: 30
-  }, {
-    group: "總計",
-    weight: 100,
-    isTotal: true
-  }],
-  5: [{
-    group: "程式作業",
-    weight: 30
-  }, {
-    group: "Quiz",
-    weight: 10
-  }, {
-    group: "期中考",
-    weight: 30
-  }, {
-    group: "期末考",
-    weight: 30
-  }, {
-    group: "總計",
-    weight: 100,
-    isTotal: true
-  }]
+  1: [
+    { group: "討論與出席", weight: 10 }, { group: "程式作業", weight: 20 },
+    { group: "期中考", weight: 35 }, { group: "期末考", weight: 35 },
+    { group: "加分題", weight: 5 }, { group: "總計", weight: 105, isTotal: true }
+  ]
 };
+
 const mockExams = {
-  1: [{
-    id: "a1",
-    name: "Assignment_CH01(1-1)",
-    due: "2026-03-20 23:50",
-    submitted: "2026-03-18 20:11",
-    status: null,
-    score: 95,
-    outOf: 100,
-    classAvg: 78.4,
-    classMax: 100,
-    classMin: 32,
-    rank: 12,
-    total: 142,
-    isHw: true
-  }, {
-    id: "e6",
-    name: "Quiz 1",
-    due: "2026-03-15 23:50",
-    submitted: "2026-03-14 20:33",
-    status: null,
-    score: 88,
-    outOf: 100,
-    classAvg: 74.2,
-    classMax: 100,
-    classMin: 30,
-    rank: 18,
-    total: 142,
-    isHw: false
-  }, {
-    id: "a2",
-    name: "Assignment_CH01(1-2)",
-    due: "2026-03-27 23:50",
-    submitted: "2026-03-25 19:44",
-    status: null,
-    score: 88,
-    outOf: 100,
-    classAvg: 75.2,
-    classMax: 100,
-    classMin: 28,
-    rank: 21,
-    total: 142,
-    isHw: true
-  }, {
-    id: "a3",
-    name: "Assignment_CH01(1-3)",
-    due: "2026-04-03 23:50",
-    submitted: "2026-04-02 22:31",
-    status: null,
-    score: 92,
-    outOf: 100,
-    classAvg: 80.1,
-    classMax: 100,
-    classMin: 35,
-    rank: 14,
-    total: 142,
-    isHw: true
-  }, {
-    id: "e7",
-    name: "Quiz 2",
-    due: "2026-04-05 23:50",
-    submitted: "2026-04-05 22:11",
-    status: null,
-    score: 92,
-    outOf: 100,
-    classAvg: 80.1,
-    classMax: 100,
-    classMin: 42,
-    rank: 11,
-    total: 142,
-    isHw: false
-  }, {
-    id: "a4",
-    name: "Assignment_CH02(2-1)",
-    due: "2026-04-10 23:50",
-    submitted: "2026-04-10 21:05",
-    status: null,
-    score: 78,
-    outOf: 100,
-    classAvg: 70.3,
-    classMax: 99,
-    classMin: 20,
-    rank: 38,
-    total: 142,
-    isHw: true
-  }, {
-    id: "a5",
-    name: "Assignment_CH02(2-2)",
-    due: "2026-04-25 23:50",
-    submitted: "2026-04-24 18:22",
-    status: null,
-    score: 85,
-    outOf: 100,
-    classAvg: 72.8,
-    classMax: 100,
-    classMin: 30,
-    rank: 27,
-    total: 142,
-    isHw: true
-  }, {
-    id: "e8",
-    name: "期中考 (實體)",
-    due: "2026-04-25 10:10",
-    submitted: null,
-    status: "missing",
-    score: 79,
-    outOf: 100,
-    classAvg: 71.8,
-    classMax: 99,
-    classMin: 28,
-    rank: 34,
-    total: 142,
-    isHw: false
-  }, {
-    id: "a6",
-    name: "Assignment_CH03(3-1)",
-    due: "2026-05-09 23:50",
-    submitted: null,
-    status: "missing",
-    score: null,
-    outOf: 100,
-    classAvg: null,
-    classMax: null,
-    classMin: null,
-    rank: null,
-    total: 142,
-    isHw: true
-  }, {
-    id: "e9",
-    name: "Quiz 3",
-    due: "2026-05-10 23:50",
-    submitted: "2026-05-12 01:04",
-    status: "late",
-    score: 82,
-    outOf: 100,
-    classAvg: 76.3,
-    classMax: 100,
-    classMin: 25,
-    rank: 28,
-    total: 142,
-    isHw: false
-  }, {
-    id: "a7",
-    name: "Assignment_CH03(3-2)",
-    due: "2026-05-23 23:50",
-    submitted: null,
-    status: null,
-    score: null,
-    outOf: 100,
-    classAvg: null,
-    classMax: null,
-    classMin: null,
-    rank: null,
-    total: 142,
-    isHw: true
-  }, {
-    id: "e12",
-    name: "期末考 (實體)",
-    due: "2026-06-25 10:10",
-    submitted: null,
-    status: null,
-    score: null,
-    outOf: 100,
-    classAvg: null,
-    classMax: null,
-    classMin: null,
-    rank: null,
-    total: 142,
-    isHw: false
-  }],
-  2: [{
-    id: "a1",
-    name: "Assignment_CH01(1-1)",
-    due: "2025-09-25 23:50",
-    submitted: "2025-09-23 19:30",
-    status: null,
-    score: 91,
-    outOf: 100,
-    classAvg: 77.0,
-    classMax: 100,
-    classMin: 30,
-    rank: 14,
-    total: 138,
-    isHw: true
-  }, {
-    id: "a2",
-    name: "Assignment_CH01(1-2)",
-    due: "2025-10-02 23:50",
-    submitted: "2025-10-01 21:10",
-    status: null,
-    score: 85,
-    outOf: 100,
-    classAvg: 74.5,
-    classMax: 100,
-    classMin: 25,
-    rank: 22,
-    total: 138,
-    isHw: true
-  }, {
-    id: "e1",
-    name: "Quiz 1",
-    due: "2025-10-04 23:50",
-    submitted: "2025-10-04 20:00",
-    status: null,
-    score: 86,
-    outOf: 100,
-    classAvg: 73.8,
-    classMax: 100,
-    classMin: 28,
-    rank: 20,
-    total: 138,
-    isHw: false
-  }, {
-    id: "a3",
-    name: "Assignment_CH02(2-1)",
-    due: "2025-10-09 23:50",
-    submitted: "2025-10-08 22:00",
-    status: null,
-    score: 88,
-    outOf: 100,
-    classAvg: 76.2,
-    classMax: 99,
-    classMin: 28,
-    rank: 16,
-    total: 138,
-    isHw: true
-  }, {
-    id: "a4",
-    name: "Assignment_CH02(2-2)",
-    due: "2025-10-23 23:50",
-    submitted: "2025-10-22 20:30",
-    status: null,
-    score: 79,
-    outOf: 100,
-    classAvg: 69.8,
-    classMax: 100,
-    classMin: 22,
-    rank: 30,
-    total: 138,
-    isHw: true
-  }, {
-    id: "e2",
-    name: "Quiz 2",
-    due: "2025-11-01 23:50",
-    submitted: "2025-11-01 19:45",
-    status: null,
-    score: 90,
-    outOf: 100,
-    classAvg: 76.5,
-    classMax: 100,
-    classMin: 32,
-    rank: 12,
-    total: 138,
-    isHw: false
-  }, {
-    id: "a5",
-    name: "Assignment_CH03(3-1)",
-    due: "2025-11-06 23:50",
-    submitted: "2025-11-05 21:00",
-    status: null,
-    score: 94,
-    outOf: 100,
-    classAvg: 80.3,
-    classMax: 100,
-    classMin: 35,
-    rank: 8,
-    total: 138,
-    isHw: true
-  }, {
-    id: "e3",
-    name: "期中考 (實體)",
-    due: "2025-11-08 10:10",
-    submitted: null,
-    status: null,
-    score: 82,
-    outOf: 100,
-    classAvg: 72.1,
-    classMax: 98,
-    classMin: 30,
-    rank: 24,
-    total: 138,
-    isHw: false
-  }, {
-    id: "a6",
-    name: "Assignment_CH03(3-2)",
-    due: "2025-11-20 23:50",
-    submitted: "2025-11-19 20:20",
-    status: null,
-    score: 87,
-    outOf: 100,
-    classAvg: 73.1,
-    classMax: 100,
-    classMin: 20,
-    rank: 18,
-    total: 138,
-    isHw: true
-  }, {
-    id: "a7",
-    name: "Assignment_CH04(4-1)",
-    due: "2025-12-04 23:50",
-    submitted: "2025-12-03 22:15",
-    status: null,
-    score: 90,
-    outOf: 100,
-    classAvg: 78.6,
-    classMax: 100,
-    classMin: 30,
-    rank: 11,
-    total: 138,
-    isHw: true
-  }, {
-    id: "a8",
-    name: "Assignment_CH04(4-2)",
-    due: "2025-12-18 23:50",
-    submitted: "2025-12-17 21:00",
-    status: null,
-    score: 83,
-    outOf: 100,
-    classAvg: 72.4,
-    classMax: 98,
-    classMin: 25,
-    rank: 26,
-    total: 138,
-    isHw: true
-  }, {
-    id: "e4",
-    name: "期末考 (實體)",
-    due: "2026-01-10 10:10",
-    submitted: null,
-    status: null,
-    score: 88,
-    outOf: 100,
-    classAvg: 75.4,
-    classMax: 100,
-    classMin: 32,
-    rank: 15,
-    total: 138,
-    isHw: false
-  }],
-  3: [{
-    id: "a1",
-    name: "Assignment_CH01(1-1)",
-    due: "2025-03-13 23:50",
-    submitted: "2025-03-11 20:00",
-    status: null,
-    score: 88,
-    outOf: 100,
-    classAvg: 75.5,
-    classMax: 100,
-    classMin: 28,
-    rank: 18,
-    total: 145,
-    isHw: true
-  }, {
-    id: "a2",
-    name: "Assignment_CH01(1-2)",
-    due: "2025-03-20 23:50",
-    submitted: "2025-03-19 21:30",
-    status: null,
-    score: 82,
-    outOf: 100,
-    classAvg: 71.2,
-    classMax: 99,
-    classMin: 20,
-    rank: 28,
-    total: 145,
-    isHw: true
-  }, {
-    id: "e1",
-    name: "Quiz 1",
-    due: "2025-03-22 23:50",
-    submitted: "2025-03-22 18:00",
-    status: null,
-    score: 85,
-    outOf: 100,
-    classAvg: 72.8,
-    classMax: 100,
-    classMin: 25,
-    rank: 22,
-    total: 145,
-    isHw: false
-  }, {
-    id: "a3",
-    name: "Assignment_CH02(2-1)",
-    due: "2025-04-03 23:50",
-    submitted: "2025-04-02 22:00",
-    status: null,
-    score: 90,
-    outOf: 100,
-    classAvg: 78.8,
-    classMax: 100,
-    classMin: 32,
-    rank: 14,
-    total: 145,
-    isHw: true
-  }, {
-    id: "a4",
-    name: "Assignment_CH02(2-2)",
-    due: "2025-04-17 23:50",
-    submitted: "2025-04-16 20:45",
-    status: null,
-    score: 75,
-    outOf: 100,
-    classAvg: 68.4,
-    classMax: 98,
-    classMin: 18,
-    rank: 36,
-    total: 145,
-    isHw: true
-  }, {
-    id: "e2",
-    name: "期中考 (實體)",
-    due: "2025-04-19 10:10",
-    submitted: null,
-    status: null,
-    score: 80,
-    outOf: 100,
-    classAvg: 70.2,
-    classMax: 98,
-    classMin: 25,
-    rank: 30,
-    total: 145,
-    isHw: false
-  }, {
-    id: "a5",
-    name: "Assignment_CH03(3-1)",
-    due: "2025-05-01 23:50",
-    submitted: "2025-04-30 21:00",
-    status: null,
-    score: 93,
-    outOf: 100,
-    classAvg: 80.1,
-    classMax: 100,
-    classMin: 35,
-    rank: 10,
-    total: 145,
-    isHw: true
-  }, {
-    id: "a6",
-    name: "Assignment_CH03(3-2)",
-    due: "2025-05-15 23:50",
-    submitted: "2025-05-14 20:30",
-    status: null,
-    score: 86,
-    outOf: 100,
-    classAvg: 74.6,
-    classMax: 100,
-    classMin: 26,
-    rank: 20,
-    total: 145,
-    isHw: true
-  }, {
-    id: "e3",
-    name: "Quiz 2",
-    due: "2025-05-17 23:50",
-    submitted: "2025-05-17 19:00",
-    status: null,
-    score: 88,
-    outOf: 100,
-    classAvg: 75.4,
-    classMax: 100,
-    classMin: 28,
-    rank: 16,
-    total: 145,
-    isHw: false
-  }, {
-    id: "a7",
-    name: "Assignment_CH04(4-1)",
-    due: "2025-05-29 23:50",
-    submitted: "2025-05-28 22:00",
-    status: null,
-    score: 89,
-    outOf: 100,
-    classAvg: 77.3,
-    classMax: 100,
-    classMin: 30,
-    rank: 15,
-    total: 145,
-    isHw: true
-  }, {
-    id: "a8",
-    name: "Assignment_CH04(4-2)",
-    due: "2025-06-12 23:50",
-    submitted: "2025-06-11 21:30",
-    status: null,
-    score: 84,
-    outOf: 100,
-    classAvg: 73.0,
-    classMax: 99,
-    classMin: 22,
-    rank: 24,
-    total: 145,
-    isHw: true
-  }, {
-    id: "e4",
-    name: "期末考 (實體)",
-    due: "2025-06-14 10:10",
-    submitted: null,
-    status: null,
-    score: 85,
-    outOf: 100,
-    classAvg: 73.8,
-    classMax: 100,
-    classMin: 28,
-    rank: 22,
-    total: 145,
-    isHw: false
-  }],
-  4: [{
-    id: "a1",
-    name: "Assignment_CH01(1-1)",
-    due: "2024-09-26 23:50",
-    submitted: "2024-09-24 20:00",
-    status: null,
-    score: 92,
-    outOf: 100,
-    classAvg: 79.2,
-    classMax: 100,
-    classMin: 35,
-    rank: 10,
-    total: 130,
-    isHw: true
-  }, {
-    id: "a2",
-    name: "Assignment_CH01(1-2)",
-    due: "2024-10-03 23:50",
-    submitted: "2024-10-02 21:00",
-    status: null,
-    score: 86,
-    outOf: 100,
-    classAvg: 73.8,
-    classMax: 100,
-    classMin: 25,
-    rank: 18,
-    total: 130,
-    isHw: true
-  }, {
-    id: "e1",
-    name: "Quiz 1",
-    due: "2024-10-05 23:50",
-    submitted: "2024-10-05 19:30",
-    status: null,
-    score: 88,
-    outOf: 100,
-    classAvg: 75.2,
-    classMax: 100,
-    classMin: 30,
-    rank: 14,
-    total: 130,
-    isHw: false
-  }, {
-    id: "a3",
-    name: "Assignment_CH02(2-1)",
-    due: "2024-10-17 23:50",
-    submitted: "2024-10-16 22:00",
-    status: null,
-    score: 78,
-    outOf: 100,
-    classAvg: 67.5,
-    classMax: 98,
-    classMin: 18,
-    rank: 26,
-    total: 130,
-    isHw: true
-  }, {
-    id: "a4",
-    name: "Assignment_CH02(2-2)",
-    due: "2024-10-31 23:50",
-    submitted: "2024-10-30 20:30",
-    status: null,
-    score: 88,
-    outOf: 100,
-    classAvg: 76.1,
-    classMax: 100,
-    classMin: 28,
-    rank: 14,
-    total: 130,
-    isHw: true
-  }, {
-    id: "e2",
-    name: "期中考 (實體)",
-    due: "2024-11-02 10:10",
-    submitted: null,
-    status: null,
-    score: 84,
-    outOf: 100,
-    classAvg: 72.6,
-    classMax: 99,
-    classMin: 30,
-    rank: 20,
-    total: 130,
-    isHw: false
-  }, {
-    id: "a5",
-    name: "Assignment_CH03(3-1)",
-    due: "2024-11-14 23:50",
-    submitted: "2024-11-13 21:30",
-    status: null,
-    score: 95,
-    outOf: 100,
-    classAvg: 81.4,
-    classMax: 100,
-    classMin: 38,
-    rank: 6,
-    total: 130,
-    isHw: true
-  }, {
-    id: "a6",
-    name: "Assignment_CH03(3-2)",
-    due: "2024-11-28 23:50",
-    submitted: "2024-11-27 20:00",
-    status: null,
-    score: 82,
-    outOf: 100,
-    classAvg: 70.9,
-    classMax: 99,
-    classMin: 22,
-    rank: 22,
-    total: 130,
-    isHw: true
-  }, {
-    id: "e3",
-    name: "Quiz 2",
-    due: "2024-11-30 23:50",
-    submitted: "2024-11-30 18:45",
-    status: null,
-    score: 90,
-    outOf: 100,
-    classAvg: 77.8,
-    classMax: 100,
-    classMin: 32,
-    rank: 10,
-    total: 130,
-    isHw: false
-  }, {
-    id: "a7",
-    name: "Assignment_CH04(4-1)",
-    due: "2024-12-12 23:50",
-    submitted: "2024-12-11 21:00",
-    status: null,
-    score: 89,
-    outOf: 100,
-    classAvg: 77.6,
-    classMax: 100,
-    classMin: 30,
-    rank: 12,
-    total: 130,
-    isHw: true
-  }, {
-    id: "a8",
-    name: "Assignment_CH04(4-2)",
-    due: "2024-12-26 23:50",
-    submitted: "2024-12-24 20:30",
-    status: null,
-    score: 85,
-    outOf: 100,
-    classAvg: 74.2,
-    classMax: 100,
-    classMin: 26,
-    rank: 16,
-    total: 130,
-    isHw: true
-  }, {
-    id: "e4",
-    name: "期末考 (實體)",
-    due: "2025-01-04 10:10",
-    submitted: null,
-    status: null,
-    score: 87,
-    outOf: 100,
-    classAvg: 75.0,
-    classMax: 100,
-    classMin: 30,
-    rank: 14,
-    total: 130,
-    isHw: false
-  }],
-  5: [{
-    id: "a1",
-    name: "Assignment_CH01(1-1)",
-    due: "2024-03-14 23:50",
-    submitted: "2024-03-12 20:00",
-    status: null,
-    score: 90,
-    outOf: 100,
-    classAvg: 78.0,
-    classMax: 100,
-    classMin: 32,
-    rank: 12,
-    total: 128,
-    isHw: true
-  }, {
-    id: "a2",
-    name: "Assignment_CH01(1-2)",
-    due: "2024-03-21 23:50",
-    submitted: "2024-03-20 21:30",
-    status: null,
-    score: 84,
-    outOf: 100,
-    classAvg: 72.5,
-    classMax: 99,
-    classMin: 24,
-    rank: 22,
-    total: 128,
-    isHw: true
-  }, {
-    id: "e1",
-    name: "Quiz 1",
-    due: "2024-03-23 23:50",
-    submitted: "2024-03-23 19:00",
-    status: null,
-    score: 87,
-    outOf: 100,
-    classAvg: 74.2,
-    classMax: 100,
-    classMin: 28,
-    rank: 16,
-    total: 128,
-    isHw: false
-  }, {
-    id: "a3",
-    name: "Assignment_CH02(2-1)",
-    due: "2024-04-04 23:50",
-    submitted: "2024-04-03 22:00",
-    status: null,
-    score: 87,
-    outOf: 100,
-    classAvg: 75.3,
-    classMax: 100,
-    classMin: 28,
-    rank: 16,
-    total: 128,
-    isHw: true
-  }, {
-    id: "a4",
-    name: "Assignment_CH02(2-2)",
-    due: "2024-04-18 23:50",
-    submitted: "2024-04-17 20:45",
-    status: null,
-    score: 79,
-    outOf: 100,
-    classAvg: 69.1,
-    classMax: 98,
-    classMin: 20,
-    rank: 28,
-    total: 128,
-    isHw: true
-  }, {
-    id: "e2",
-    name: "期中考 (實體)",
-    due: "2024-04-20 10:10",
-    submitted: null,
-    status: null,
-    score: 83,
-    outOf: 100,
-    classAvg: 71.8,
-    classMax: 98,
-    classMin: 28,
-    rank: 24,
-    total: 128,
-    isHw: false
-  }, {
-    id: "a5",
-    name: "Assignment_CH03(3-1)",
-    due: "2024-05-02 23:50",
-    submitted: "2024-05-01 21:00",
-    status: null,
-    score: 92,
-    outOf: 100,
-    classAvg: 79.8,
-    classMax: 100,
-    classMin: 34,
-    rank: 10,
-    total: 128,
-    isHw: true
-  }, {
-    id: "a6",
-    name: "Assignment_CH03(3-2)",
-    due: "2024-05-16 23:50",
-    submitted: "2024-05-15 20:30",
-    status: null,
-    score: 86,
-    outOf: 100,
-    classAvg: 74.2,
-    classMax: 100,
-    classMin: 26,
-    rank: 18,
-    total: 128,
-    isHw: true
-  }, {
-    id: "e3",
-    name: "Quiz 2",
-    due: "2024-05-18 23:50",
-    submitted: "2024-05-18 19:30",
-    status: null,
-    score: 89,
-    outOf: 100,
-    classAvg: 76.5,
-    classMax: 100,
-    classMin: 30,
-    rank: 12,
-    total: 128,
-    isHw: false
-  }, {
-    id: "a7",
-    name: "Assignment_CH04(4-1)",
-    due: "2024-05-30 23:50",
-    submitted: "2024-05-29 22:00",
-    status: null,
-    score: 88,
-    outOf: 100,
-    classAvg: 76.8,
-    classMax: 100,
-    classMin: 30,
-    rank: 14,
-    total: 128,
-    isHw: true
-  }, {
-    id: "a8",
-    name: "Assignment_CH04(4-2)",
-    due: "2024-06-13 23:50",
-    submitted: "2024-06-12 21:30",
-    status: null,
-    score: 83,
-    outOf: 100,
-    classAvg: 72.0,
-    classMax: 98,
-    classMin: 24,
-    rank: 22,
-    total: 128,
-    isHw: true
-  }, {
-    id: "e4",
-    name: "期末考 (實體)",
-    due: "2024-06-08 10:10",
-    submitted: null,
-    status: null,
-    score: 86,
-    outOf: 100,
-    classAvg: 74.5,
-    classMax: 100,
-    classMin: 28,
-    rank: 16,
-    total: 128,
-    isHw: false
-  }]
+  1: [
+    { id: "a1", name: "Assignment_CH01(1-1)", due: "2026-03-20 23:50", submitted: "2026-03-18 20:11", status: null, score: 95, outOf: 100, isHw: true },
+    { id: "e6", name: "Quiz 1", due: "2026-03-15 23:50", submitted: "2026-03-14 20:33", status: null, score: 88, outOf: 100, isHw: false },
+    { id: "a2", name: "Assignment_CH01(1-2)", due: "2026-03-27 23:50", submitted: "2026-03-25 19:44", status: null, score: 88, outOf: 100, isHw: true },
+    { id: "a3", name: "Assignment_CH01(1-3)", due: "2026-04-03 23:50", submitted: "2026-04-02 22:31", status: null, score: 92, outOf: 100, isHw: true },
+    { id: "e7", name: "Quiz 2", due: "2026-04-05 23:50", submitted: "2026-04-05 22:11", status: null, score: 92, outOf: 100, isHw: false },
+    { id: "a4", name: "Assignment_CH02(2-1)", due: "2026-04-10 23:50", submitted: "2026-04-10 21:05", status: null, score: 78, outOf: 100, isHw: true },
+    { id: "a5", name: "Assignment_CH02(2-2)", due: "2026-04-25 23:50", submitted: "2026-04-24 18:22", status: null, score: 85, outOf: 100, isHw: true },
+    { id: "e8", name: "期中考 (實體)", due: "2026-04-25 10:10", submitted: null, status: "missing", score: 79, outOf: 100, isHw: false },
+    { id: "a6", name: "Assignment_CH03(3-1)", due: "2026-05-09 23:50", submitted: null, status: "missing", score: null, outOf: 100, isHw: true },
+    { id: "e9", name: "Quiz 3", due: "2026-05-10 23:50", submitted: "2026-05-12 01:04", status: "late", score: 82, outOf: 100, isHw: false },
+    { id: "a7", name: "Assignment_CH03(3-2)", due: "2026-05-23 23:50", submitted: null, status: null, score: null, outOf: 100, isHw: true },
+    { id: "e12", name: "期末考 (實體)", due: "2026-06-25 10:10", submitted: null, status: null, score: null, outOf: 100, isHw: false }
+  ]
 };
-const mockNotifications = [{
-  id: 1,
-  type: "assignment",
-  course: "計算機概論",
-  title: "Assignment_CH03(3-1) 布林代數基礎",
-  deadline: "2026-05-09 23:50",
-  urgent: true,
-  read: false
-}, {
-  id: 2,
-  type: "assignment",
-  course: "計算機概論",
-  title: "Assignment_CH03(3-2) 邏輯閘與電路設計",
-  deadline: "2026-05-23 23:50",
-  urgent: false,
-  read: false
-}, {
-  id: 3,
-  type: "exam",
-  course: "計算機概論",
-  title: "期末考 (實體)",
-  deadline: "2026-06-25 10:10",
-  urgent: false,
-  read: true
-}];
+
+const mockNotifications = [
+  { id: 1, type: "assignment", course: "計算機概論", title: "Assignment_CH03(3-1) 布林代數基礎", deadline: "2026-05-09 23:50", urgent: true, read: false },
+  { id: 2, type: "assignment", course: "計算機概論", title: "Assignment_CH03(3-2) 邏輯閘與電路設計", deadline: "2026-05-23 23:50", urgent: false, read: false },
+  { id: 3, type: "exam", course: "計算機概論", title: "期末考 (實體)", deadline: "2026-06-25 10:10", urgent: false, read: true }
+];
+
 const today = new Date("2026-05-20");
 
-
-function daysUntil(str) {
-  return Math.ceil((new Date(str) - today) / 86400000);
-}
+function daysUntil(str) { return Math.ceil((new Date(str) - today) / 86400000); }
 function fmt(str) {
   if (!str) return "—";
   const [date, time] = str.split(" ");
   const [y, m, d] = date.split("-");
   return time ? `${y}/${m}/${d} ${time.slice(0, 5)}` : `${y}/${m}/${d}`;
-}
-function percentile(score, avg) {
-  if (score === null || avg === null) return null;
-  return Math.min(99, Math.round(50 + (score - avg) / avg * 40));
 }
 function downloadText(filename, text) {
   const uri = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
@@ -2429,1768 +134,440 @@ function downloadText(filename, text) {
   document.body.removeChild(a);
 }
 
+// 待繳作業數（active 課程，未繳且未逾期）
+function pendingCount(courseId) {
+  const list = mockAssignments[courseId] || [];
+  return list.filter(a => !a.submitted && daysUntil(a.end) >= 0).length;
+}
+// 取最近一筆待繳作業 id（依截止日最近）
+function nextPendingId(courseId) {
+  const list = mockAssignments[courseId] || [];
+  const pend = list.filter(a => !a.submitted && daysUntil(a.end) >= 0)
+    .sort((x, y) => new Date(x.end) - new Date(y.end));
+  return pend.length ? pend[0].id : null;
+}
 
 const C = {
-  bg: "#0d1a24",
-  panel: "#0e1e2a",
-  card: "#162736",
-  cardDim: "#111e2a",
-  border: "#1a3040",
-  borderDim: "#1a2f3a",
-  teal: "#2a9d80",
-  tealLt: "#5ee6c8",
-  tealBg: "#0d2a24",
-  amber: "#f0c060",
-  amberBg: "#2a1c05",
-  red: "#c0392b",
-  redLt: "#f87171",
-  purple: "#a78bfa",
-  purpleBg: "#1a0f2e",
-  text: "#d1e8f0",
-  muted: "#4e6a7a",
-  mutedMid: "#2a5a6a"
+  bg: "#0d1a24", panel: "#0e1e2a", card: "#162736", cardDim: "#111e2a",
+  border: "#1a3040", borderDim: "#1a2f3a", teal: "#2a9d80", tealLt: "#5ee6c8",
+  tealBg: "#0d2a24", amber: "#f0c060", amberBg: "#2a1c05", red: "#c0392b",
+  redLt: "#f87171", purple: "#a78bfa", purpleBg: "#1a0f2e", text: "#d1e8f0",
+  muted: "#4e6a7a", mutedMid: "#2a5a6a"
 };
 
-
-function Chip({
-  label,
-  color,
-  bg,
-  border
-}) {
-  return /*#__PURE__*/React.createElement("span", {
-    style: {
-      background: bg,
-      color,
-      border: `1px solid ${border || color + "33"}`,
-      borderRadius: 5,
-      padding: "2px 7px",
-      fontSize: 10,
-      fontWeight: 700,
-      whiteSpace: "nowrap"
-    }
+function Chip({ label, color, bg, border }) {
+  return React.createElement("span", {
+    style: { background: bg, color, border: `1px solid ${border || color + "33"}`, borderRadius: 5, padding: "2px 7px", fontSize: 10, fontWeight: 700, whiteSpace: "nowrap" }
   }, label);
 }
-function DeadlineBadge({
-  end
-}) {
+function DeadlineBadge({ end }) {
   const d = daysUntil(end);
-  if (d < 0) return /*#__PURE__*/React.createElement(Chip, {
-    label: "\u5DF2\u622A\u6B62",
-    color: C.muted,
-    bg: "transparent"
-  });
-  if (d === 0) return /*#__PURE__*/React.createElement(Chip, {
-    label: "\u4ECA\u65E5\u622A\u6B62",
-    color: "#fff",
-    bg: C.red
-  });
-  if (d <= 3) return /*#__PURE__*/React.createElement(Chip, {
-    label: `剩 ${d} 天`,
-    color: "#fff",
-    bg: C.red
-  });
-  if (d <= 7) return /*#__PURE__*/React.createElement(Chip, {
-    label: `剩 ${d} 天`,
-    color: "#fff",
-    bg: "#c0720a"
-  });
-  if (d <= 30) return /*#__PURE__*/React.createElement(Chip, {
-    label: `剩 ${d} 天`,
-    color: "#fff",
-    bg: "#2a7a40"
-  });
-  return /*#__PURE__*/React.createElement(Chip, {
-    label: `剩 ${d} 天`,
-    color: C.tealLt,
-    bg: C.tealBg,
-    border: C.teal
-  });
+  if (d < 0) return React.createElement(Chip, { label: "已截止", color: C.muted, bg: "transparent" });
+  if (d === 0) return React.createElement(Chip, { label: "今日截止", color: "#fff", bg: C.red });
+  if (d <= 3) return React.createElement(Chip, { label: `剩 ${d} 天`, color: "#fff", bg: C.red });
+  if (d <= 7) return React.createElement(Chip, { label: `剩 ${d} 天`, color: "#fff", bg: "#c0720a" });
+  if (d <= 30) return React.createElement(Chip, { label: `剩 ${d} 天`, color: "#fff", bg: "#2a7a40" });
+  return React.createElement(Chip, { label: `剩 ${d} 天`, color: C.tealLt, bg: C.tealBg, border: C.teal });
 }
-function DateBlock({
-  start,
-  end,
-  dim
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: "#0e1e2a",
-      border: `1px solid ${C.border}`,
-      borderRadius: 8,
-      padding: "8px 12px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.muted,
-      letterSpacing: .5,
-      marginBottom: 3
-    }
-  }, "\u958B\u59CB"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: dim ? C.mutedMid : C.tealLt
-    }
-  }, fmt(start))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: C.mutedMid,
-      fontSize: 14
-    }
-  }, "\u2192"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.muted,
-      letterSpacing: .5,
-      marginBottom: 3
-    }
-  }, "\u7D50\u675F"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: dim ? C.mutedMid : C.amber
-    }
-  }, fmt(end))));
+function DateBlock({ start, end, dim }) {
+  return React.createElement("div", { style: { background: "#0e1e2a", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" } },
+    React.createElement("div", { style: { textAlign: "center" } },
+      React.createElement("div", { style: { fontSize: 9, color: C.muted, letterSpacing: .5, marginBottom: 3 } }, "開始"),
+      React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: dim ? C.mutedMid : C.tealLt } }, fmt(start))),
+    React.createElement("div", { style: { color: C.mutedMid, fontSize: 14 } }, "→"),
+    React.createElement("div", { style: { textAlign: "center" } },
+      React.createElement("div", { style: { fontSize: 9, color: C.muted, letterSpacing: .5, marginBottom: 3 } }, "結束"),
+      React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: dim ? C.mutedMid : C.amber } }, fmt(end))));
 }
-function ProgressBar({
-  value,
-  dim,
-  color
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: "100%",
-      background: "#0e1e2a",
-      borderRadius: 99,
-      height: 5,
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: `${value}%`,
-      background: color || (dim ? C.mutedMid : C.teal),
-      height: "100%",
-      borderRadius: 99
-    }
-  }));
-}
-function StatBox({
-  label,
-  value,
-  unit,
-  color
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: "#0e1e2a",
-      border: `1px solid ${C.border}`,
-      borderRadius: 10,
-      padding: "11px 12px"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.muted,
-      marginBottom: 4
-    }
-  }, label), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 20,
-      fontWeight: 800,
-      color: color || C.tealLt,
-      lineHeight: 1
-    }
-  }, value, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      color: C.muted,
-      marginLeft: 2
-    }
-  }, unit)));
-}
-function MiniBar({
-  dist,
-  colors
-}) {
-  const max = Math.max(...dist);
-  const barColors = colors || [C.teal, C.teal, "#d4880a", "#c05020", C.red];
-  const labels = ["90+", "80s", "70s", "60s", "<60"];
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "flex-end",
-      gap: 6,
-      height: 72
-    }
-  }, dist.map((v, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 3
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 9,
-      color: C.muted
-    }
-  }, v), /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: "100%",
-      background: barColors[i],
-      borderRadius: "3px 3px 0 0",
-      height: `${v / max * 54}px`,
-      minHeight: 3
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 8,
-      color: C.muted
-    }
-  }, labels[i]))));
+function ProgressBar({ value, dim, color }) {
+  return React.createElement("div", { style: { width: "100%", background: "#0e1e2a", borderRadius: 99, height: 5, overflow: "hidden" } },
+    React.createElement("div", { style: { width: `${value}%`, background: color || (dim ? C.mutedMid : C.teal), height: "100%", borderRadius: 99 } }));
 }
 
-
-function NotificationPanel({
-  onClose
-}) {
+function NotificationPanel({ onClose, onJump }) {
   const [tab, setTab] = useState("all");
   const [readIds, setReadIds] = useState(new Set(mockNotifications.filter(n => n.read).map(n => n.id)));
   const markRead = id => setReadIds(prev => new Set([...prev, id]));
   const list = tab === "all" ? mockNotifications : mockNotifications.filter(n => n.type === tab);
   const unreadCount = mockNotifications.filter(n => !readIds.has(n.id)).length;
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      top: 50,
-      right: 0,
-      width: 290,
-      background: C.card,
-      border: `1px solid ${C.border}`,
-      borderRadius: 14,
-      boxShadow: "0 8px 32px #00000090",
-      zIndex: 300,
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "11px 14px 0",
-      borderBottom: `1px solid ${C.border}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 9
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 7
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: C.text
-    }
-  }, "\u901A\u77E5"), unreadCount > 0 && /*#__PURE__*/React.createElement("span", {
-    style: {
-      background: C.red,
-      color: "#fff",
-      borderRadius: 99,
-      padding: "1px 6px",
-      fontSize: 10,
-      fontWeight: 800
-    }
-  }, unreadCount)), /*#__PURE__*/React.createElement("button", {
-    onClick: onClose,
-    style: {
-      background: "none",
-      border: "none",
-      color: C.muted,
-      cursor: "pointer",
-      fontSize: 17,
-      lineHeight: 1
-    }
-  }, "\xD7")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex"
-    }
-  }, [["all", "全部"], ["assignment", "作業"], ["exam", "考試"]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
-    key: k,
-    onClick: () => setTab(k),
-    style: {
-      flex: 1,
-      background: "none",
-      border: "none",
-      borderBottom: tab === k ? `2px solid ${C.teal}` : "2px solid transparent",
-      color: tab === k ? C.teal : C.muted,
-      padding: "5px 0 7px",
-      fontSize: 11,
-      fontWeight: 600,
-      cursor: "pointer"
-    }
-  }, l)))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      maxHeight: 300,
-      overflowY: "auto"
-    }
-  }, list.map(n => {
-    const d = daysUntil(n.deadline);
-    const isA = n.type === "assignment";
-    const isUnread = !readIds.has(n.id);
-    return /*#__PURE__*/React.createElement("div", {
-      key: n.id,
-      onClick: () => markRead(n.id),
-      style: {
-        padding: "10px 14px",
-        borderBottom: `1px solid #1a3040`,
-        background: n.urgent ? "#1c0e0e" : isUnread ? "#0f1e2a" : "transparent",
-        display: "flex",
-        gap: 9,
-        alignItems: "flex-start",
-        cursor: "pointer",
-        transition: "background .15s"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        paddingTop: 4,
-        flexShrink: 0,
-        width: 8
-      }
-    }, isUnread && /*#__PURE__*/React.createElement("div", {
-      style: {
-        width: 7,
-        height: 7,
-        borderRadius: "50%",
-        background: C.teal,
-        boxShadow: `0 0 5px ${C.teal}`
-      }
-    })), /*#__PURE__*/React.createElement(Chip, {
-      label: isA ? "作業" : "考試",
-      color: isA ? C.teal : C.amber,
-      bg: isA ? C.tealBg : C.amberBg,
-      border: isA ? C.teal : C.amber
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 12,
-        fontWeight: isUnread ? 700 : 600,
-        color: n.urgent ? C.redLt : C.text,
-        marginBottom: 2
-      }
-    }, n.title), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 10,
-        color: C.muted
-      }
-    }, n.course), /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginTop: 3,
-        display: "flex",
-        justifyContent: "space-between"
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 10,
-        color: C.muted
-      }
-    }, fmt(n.deadline)), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 10,
-        fontWeight: 700,
-        color: d <= 3 ? C.redLt : d <= 7 ? "#fbbf24" : C.muted
-      }
-    }, d <= 0 ? "已截止" : `剩 ${d} 天`))));
-  })));
+  return React.createElement("div", { style: { position: "absolute", top: 50, right: 0, width: 290, background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: "0 8px 32px #00000090", zIndex: 300, overflow: "hidden" } },
+    React.createElement("div", { style: { padding: "11px 14px 0", borderBottom: `1px solid ${C.border}` } },
+      React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 } },
+        React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 7 } },
+          React.createElement("span", { style: { fontSize: 13, fontWeight: 700, color: C.text } }, "通知"),
+          unreadCount > 0 && React.createElement("span", { style: { background: C.red, color: "#fff", borderRadius: 99, padding: "1px 6px", fontSize: 10, fontWeight: 800 } }, unreadCount)),
+        React.createElement("button", { onClick: onClose, style: { background: "none", border: "none", color: C.muted, cursor: "pointer", fontSize: 17, lineHeight: 1 } }, "×")),
+      React.createElement("div", { style: { display: "flex" } },
+        [["all", "全部"], ["assignment", "作業"], ["exam", "考試"]].map(([k, l]) =>
+          React.createElement("button", { key: k, onClick: () => setTab(k), style: { flex: 1, background: "none", border: "none", borderBottom: tab === k ? `2px solid ${C.teal}` : "2px solid transparent", color: tab === k ? C.teal : C.muted, padding: "5px 0 7px", fontSize: 11, fontWeight: 600, cursor: "pointer" } }, l)))),
+    React.createElement("div", { style: { maxHeight: 300, overflowY: "auto" } },
+      list.map(n => {
+        const d = daysUntil(n.deadline);
+        const isA = n.type === "assignment";
+        const isUnread = !readIds.has(n.id);
+        return React.createElement("div", {
+          key: n.id,
+          onClick: () => { markRead(n.id); if (onJump) onJump(n); },
+          style: { padding: "10px 14px", borderBottom: `1px solid #1a3040`, background: n.urgent ? "#1c0e0e" : isUnread ? "#0f1e2a" : "transparent", display: "flex", gap: 9, alignItems: "flex-start", cursor: "pointer", transition: "background .15s" }
+        },
+          React.createElement("div", { style: { paddingTop: 4, flexShrink: 0, width: 8 } },
+            isUnread && React.createElement("div", { style: { width: 7, height: 7, borderRadius: "50%", background: C.teal, boxShadow: `0 0 5px ${C.teal}` } })),
+          React.createElement(Chip, { label: isA ? "作業" : "考試", color: isA ? C.teal : C.amber, bg: isA ? C.tealBg : C.amberBg, border: isA ? C.teal : C.amber }),
+          React.createElement("div", { style: { flex: 1 } },
+            React.createElement("div", { style: { fontSize: 12, fontWeight: isUnread ? 700 : 600, color: n.urgent ? C.redLt : C.text, marginBottom: 2 } }, n.title),
+            React.createElement("div", { style: { fontSize: 10, color: C.muted } }, n.course),
+            React.createElement("div", { style: { marginTop: 3, display: "flex", justifyContent: "space-between" } },
+              React.createElement("span", { style: { fontSize: 10, color: C.muted } }, fmt(n.deadline)),
+              React.createElement("span", { style: { fontSize: 10, fontWeight: 700, color: d <= 3 ? C.redLt : d <= 7 ? "#fbbf24" : C.muted } }, d <= 0 ? "已截止" : `剩 ${d} 天`))));
+      })));
 }
 
-
-function Header({
-  title,
-  sub,
-  onBack,
-  notifOpen,
-  setNotifOpen,
-  showRegister
-}) {
+function Header({ title, sub, onBack, notifOpen, setNotifOpen, showRegister, onJump }) {
   const urgentCount = mockNotifications.filter(n => !n.read).length;
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.panel,
-      borderBottom: `1px solid ${C.border}`,
-      padding: "12px 16px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      position: "sticky",
-      top: 0,
-      zIndex: 100
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 9
-    }
-  }, onBack && /*#__PURE__*/React.createElement("button", {
-    onClick: onBack,
-    style: {
-      background: "none",
-      border: "none",
-      color: C.teal,
-      cursor: "pointer",
-      fontSize: 22,
-      lineHeight: 1,
-      padding: 0,
-      marginRight: 2
-    }
-  }, "\u2039"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 15,
-      fontWeight: 800,
-      color: C.text,
-      lineHeight: 1.2
-    }
-  }, title), sub && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.muted,
-      marginTop: 1
-    }
-  }, sub))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 9,
-      alignItems: "center",
-      position: "relative"
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setNotifOpen(v => !v),
-    style: {
-      position: "relative",
-      background: notifOpen ? C.card : C.panel,
-      border: `1px solid ${C.border}`,
-      borderRadius: 8,
-      width: 34,
-      height: 30,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      fontSize: 15
-    }
-  }, "\uD83D\uDD14", urgentCount > 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      top: -5,
-      right: -5,
-      background: C.red,
-      color: "#fff",
-      borderRadius: 99,
-      width: 15,
-      height: 15,
-      fontSize: 9,
-      fontWeight: 800,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      border: `2px solid ${C.panel}`
-    }
-  }, urgentCount)), showRegister && /*#__PURE__*/React.createElement("button", {
-    style: {
-      background: C.teal,
-      color: "#fff",
-      border: "none",
-      borderRadius: 8,
-      padding: "6px 12px",
-      fontSize: 12,
-      fontWeight: 600,
-      cursor: "pointer"
-    }
-  }, "+ \u8A3B\u518A\u8AB2\u7A0B"), notifOpen && /*#__PURE__*/React.createElement(NotificationPanel, {
-    onClose: () => setNotifOpen(false)
-  })));
+  return React.createElement("div", { style: { background: C.panel, borderBottom: `1px solid ${C.border}`, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 100 } },
+    React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 9 } },
+      onBack && React.createElement("button", { onClick: onBack, style: { background: "none", border: "none", color: C.teal, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0, marginRight: 2 } }, "‹"),
+      React.createElement("div", null,
+        React.createElement("div", { style: { fontSize: 15, fontWeight: 800, color: C.text, lineHeight: 1.2 } }, title),
+        sub && React.createElement("div", { style: { fontSize: 10, color: C.muted, marginTop: 1 } }, sub))),
+    React.createElement("div", { style: { display: "flex", gap: 9, alignItems: "center", position: "relative" } },
+      React.createElement("button", { onClick: () => setNotifOpen(v => !v), style: { position: "relative", background: notifOpen ? C.card : C.panel, border: `1px solid ${C.border}`, borderRadius: 8, width: 34, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 15 } },
+        "🔔",
+        urgentCount > 0 && React.createElement("div", { style: { position: "absolute", top: -5, right: -5, background: C.red, color: "#fff", borderRadius: 99, width: 15, height: 15, fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: `2px solid ${C.panel}` } }, urgentCount)),
+      showRegister && React.createElement("button", { style: { background: C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" } }, "+ 註冊課程"),
+      notifOpen && React.createElement(NotificationPanel, { onClose: () => setNotifOpen(false), onJump })));
 }
 
-
-function CoursePage({
-  onAssignments,
-  onExams,
-  notifOpen,
-  setNotifOpen
-}) {
+function CoursePage({ onAssignments, onExams, notifOpen, setNotifOpen }) {
   const activeCnt = mockCourses.filter(c => c.status === "active").length;
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Header, {
-    title: "21CS",
-    notifOpen: notifOpen,
-    setNotifOpen: setNotifOpen,
-    showRegister: true
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "16px 16px 0"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 18,
-      fontWeight: 800,
-      color: C.text,
-      marginBottom: 2
-    }
-  }, "\u6B61\u8FCE\uFF0Cuser \u767B\u5165 21CS"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: C.muted
-    }
-  }, "\u60A8\u76EE\u524D\u6709 ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.teal,
-      fontWeight: 700
-    }
-  }, activeCnt), " \u9580\u8AB2\u7A0B\u9032\u884C\u4E2D")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "12px 16px 0",
-      display: "flex",
-      flexDirection: "column",
-      gap: 10
-    }
-  }, mockCourses.map(course => {
-    const isActive = course.status === "active";
-    return /*#__PURE__*/React.createElement("div", {
-      key: course.id,
-      style: {
-        background: isActive ? C.card : C.cardDim,
-        border: `1px solid ${isActive ? C.teal : C.borderDim}`,
-        borderRadius: 12,
-        padding: "13px 14px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 9,
-        position: "relative"
-      }
-    }, isActive && /*#__PURE__*/React.createElement("div", {
-      style: {
-        position: "absolute",
-        top: 11,
-        right: 11,
-        width: 7,
-        height: 7,
-        borderRadius: "50%",
-        background: C.teal,
-        boxShadow: `0 0 7px ${C.teal}`
-      }
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 15,
-        fontWeight: 700,
-        color: isActive ? C.text : C.muted
-      }
-    }, course.name), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 10,
-        color: C.mutedMid,
-        marginTop: 1
-      }
-    }, course.code)), /*#__PURE__*/React.createElement(DeadlineBadge, {
-      end: course.end
-    })), /*#__PURE__*/React.createElement(DateBlock, {
-      start: course.start,
-      end: course.end,
-      dim: !isActive
-    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        marginBottom: 4
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 10,
-        color: C.muted
-      }
-    }, "\u8AB2\u7A0B\u9032\u5EA6"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 10,
-        fontWeight: 700,
-        color: isActive ? C.teal : C.mutedMid
-      }
-    }, course.progress, "%")), /*#__PURE__*/React.createElement(ProgressBar, {
-      value: course.progress,
-      dim: !isActive
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => onAssignments(course),
-      style: {
-        flex: 1,
-        background: isActive ? C.teal : "#162736",
-        color: isActive ? "#fff" : C.muted,
-        border: "none",
-        borderRadius: 8,
-        padding: "9px 0",
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: "pointer"
-      }
-    }, "\u25B6 \u9032\u5165\u8AB2\u7A0B"), /*#__PURE__*/React.createElement("button", {
-      onClick: () => onExams(course),
-      style: {
-        flex: 1,
-        background: "#0e1e2a",
-        color: isActive ? C.purple : C.muted,
-        border: `1px solid ${isActive ? C.purple + "44" : C.borderDim}`,
-        borderRadius: 8,
-        padding: "9px 0",
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: "pointer"
-      }
-    }, "\uD83D\uDCDD \u6210\u7E3E\u4E00\u89BD")));
-  })));
+  return React.createElement("div", null,
+    React.createElement(Header, { title: "21CS", notifOpen, setNotifOpen, showRegister: true,
+      onJump: (n) => { if (n.type === "assignment") onAssignments(mockCourses[0], nextPendingId(1)); } }),
+    React.createElement("div", { style: { padding: "16px 16px 0" } },
+      React.createElement("div", { style: { fontSize: 18, fontWeight: 800, color: C.text, marginBottom: 2 } }, "歡迎，user 登入 21CS"),
+      React.createElement("div", { style: { fontSize: 11, color: C.muted } }, "您目前有 ",
+        React.createElement("span", { style: { color: C.teal, fontWeight: 700 } }, activeCnt), " 門課程進行中")),
+    React.createElement("div", { style: { padding: "12px 16px 0", display: "flex", flexDirection: "column", gap: 10 } },
+      mockCourses.map(course => {
+        const isActive = course.status === "active";
+        const pend = isActive ? pendingCount(course.id) : 0;
+        return React.createElement("div", { key: course.id, style: { background: isActive ? C.card : C.cardDim, border: `1px solid ${isActive ? C.teal : C.borderDim}`, borderRadius: 12, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 9, position: "relative" } },
+          isActive && React.createElement("div", { style: { position: "absolute", top: 11, right: 11, width: 7, height: 7, borderRadius: "50%", background: C.teal, boxShadow: `0 0 7px ${C.teal}` } }),
+          React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 } },
+            React.createElement("div", null,
+              React.createElement("div", { style: { fontSize: 15, fontWeight: 700, color: isActive ? C.text : C.muted } }, course.name),
+              React.createElement("div", { style: { fontSize: 10, color: C.mutedMid, marginTop: 1 } }, course.code)),
+            React.createElement(DeadlineBadge, { end: course.end })),
+          React.createElement(DateBlock, { start: course.start, end: course.end, dim: !isActive }),
+          React.createElement("div", null,
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginBottom: 4 } },
+              React.createElement("span", { style: { fontSize: 10, color: C.muted } }, "課程進度"),
+              React.createElement("span", { style: { fontSize: 10, fontWeight: 700, color: isActive ? C.teal : C.mutedMid } }, course.progress, "%")),
+            React.createElement(ProgressBar, { value: course.progress, dim: !isActive })),
+          // ---- 改進 A：待繳作業直達 CTA ----
+          isActive && pend > 0 && React.createElement("button", {
+            onClick: () => onAssignments(course, nextPendingId(course.id)),
+            style: { display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "#1c0e0e", border: `1px solid ${C.red}88`, borderRadius: 9, padding: "9px 12px", cursor: "pointer" }
+          },
+            React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 8 } },
+              React.createElement("span", { style: { background: C.red, color: "#fff", borderRadius: 99, minWidth: 18, height: 18, fontSize: 11, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 5px" } }, "●" + pend),
+              React.createElement("span", { style: { fontSize: 12, fontWeight: 700, color: C.redLt } }, "待繳作業，點此前往繳交")),
+            React.createElement("span", { style: { fontSize: 14, color: C.redLt, fontWeight: 800 } }, "›")),
+          React.createElement("div", { style: { display: "flex", gap: 8 } },
+            React.createElement("button", { onClick: () => onAssignments(course), style: { flex: 1, background: isActive ? C.teal : "#162736", color: isActive ? "#fff" : C.muted, border: "none", borderRadius: 8, padding: "9px 0", fontSize: 12, fontWeight: 600, cursor: "pointer" } }, "▶ 進入課程"),
+            React.createElement("button", { onClick: () => onExams(course), style: { flex: 1, background: "#0e1e2a", color: isActive ? C.purple : C.muted, border: `1px solid ${isActive ? C.purple + "44" : C.borderDim}`, borderRadius: 8, padding: "9px 0", fontSize: 12, fontWeight: 600, cursor: "pointer" } }, "📝 成績一覽")));
+      })));
 }
-
 
 const STAR_LABELS = ["", "非常簡單", "偏簡單", "適中", "偏難", "非常難"];
-function StarRating({
-  value,
-  onChange
-}) {
+function StarRating({ value, onChange }) {
   const [hover, setHover] = useState(0);
   const active = hover || value;
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.muted,
-      marginBottom: 6
-    }
-  }, "\u4F5C\u696D\u96E3\u5EA6\u81EA\u8A55 ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.red,
-      marginLeft: 2
-    }
-  }, "*\u5FC5\u586B")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 4
-    }
-  }, [1, 2, 3, 4, 5].map(i => /*#__PURE__*/React.createElement("button", {
-    key: i,
-    onClick: () => onChange(i),
-    onMouseEnter: () => setHover(i),
-    onMouseLeave: () => setHover(0),
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      padding: 0,
-      fontSize: 28,
-      lineHeight: 1,
-      color: active >= i ? "#ffffff" : "#2a4a5a",
-      transform: active === i ? "scale(1.2)" : "scale(1)",
-      transition: "all .12s",
-      textShadow: active >= i ? "0 0 8px rgba(255,255,255,0.4)" : "none"
-    }
-  }, "\u2605")), active > 0 && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      color: value ? C.amber : C.muted,
-      fontWeight: 600,
-      marginLeft: 6
-    }
-  }, STAR_LABELS[active])));
+  return React.createElement("div", null,
+    React.createElement("div", { style: { fontSize: 10, color: C.muted, marginBottom: 6 } }, "作業難度自評 ",
+      React.createElement("span", { style: { color: C.red, marginLeft: 2 } }, "*必填")),
+    React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 4 } },
+      [1, 2, 3, 4, 5].map(i =>
+        React.createElement("button", { key: i, onClick: () => onChange(i), onMouseEnter: () => setHover(i), onMouseLeave: () => setHover(0), style: { background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: 28, lineHeight: 1, color: active >= i ? "#ffffff" : "#2a4a5a", transform: active === i ? "scale(1.2)" : "scale(1)", transition: "all .12s", textShadow: active >= i ? "0 0 8px rgba(255,255,255,0.4)" : "none" } }, "★")),
+      active > 0 && React.createElement("span", { style: { fontSize: 11, color: value ? C.amber : C.muted, fontWeight: 600, marginLeft: 6 } }, STAR_LABELS[active])),
+    // ---- 改進 C：輕量說明文案 ----
+    React.createElement("div", { style: { fontSize: 10, color: C.mutedMid, marginTop: 6, lineHeight: 1.4 } }, "你的難度回饋會用來調整下次教學節奏，僅供老師參考、不影響成績。"));
 }
-function SubmitZone({
-  assignment,
-  statusMeta
-}) {
+
+function SubmitZone({ assignment, statusMeta, highlight }) {
   const isOverdue = !assignment.submitted && daysUntil(assignment.end) < 0;
   const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState(null);
   const [rating, setRating] = useState(0);
+  const [hintHover, setHintHover] = useState(false);
   const [uploadedName, setUploadedName] = useState(assignment.submitted ? "HW1_submission.zip" : null);
   const [uploadedRating, setUploadedRating] = useState(assignment.submitted ? 3 : 0);
+  const [receipt, setReceipt] = useState(assignment.submitted ? {
+    name: "HW1_submission.zip", time: "2026-04-22 21:14", code: "#" + assignment.ch.replace(/[^0-9]/g, "") + "-0314"
+  } : null);
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    if (highlight && rootRef.current) {
+      rootRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      rootRef.current.classList.add("anchor-hl");
+      const t = setTimeout(() => { if (rootRef.current) rootRef.current.classList.remove("anchor-hl"); }, 3000);
+      return () => clearTimeout(t);
+    }
+  }, [highlight]);
+
   if (isOverdue) {
-    return /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: "#1c0a0a",
-        border: `1px solid ${C.red}44`,
-        borderRadius: 10,
-        padding: "14px 14px"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        marginBottom: 12,
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 10,
-        fontWeight: 700,
-        color: C.mutedMid,
-        marginBottom: 1
-      }
-    }, assignment.ch), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        fontWeight: 700,
-        color: C.muted,
-        lineHeight: 1.3,
-        marginBottom: 2
-      }
-    }, assignment.label), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: C.muted
-      }
-    }, assignment.name), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 12,
-        marginTop: 6
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 4
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 9,
-        color: C.muted
-      }
-    }, "\u767C\u5E03"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 11,
-        fontWeight: 600,
-        color: C.muted
-      }
-    }, fmt(assignment.start))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 4
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 9,
-        color: C.muted
-      }
-    }, "\u622A\u6B62"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 11,
-        fontWeight: 700,
-        color: C.redLt
-      }
-    }, fmt(assignment.end))))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: "#2a0a0a",
-        color: C.redLt,
-        border: `1px solid ${C.red}`,
-        borderRadius: 7,
-        padding: "4px 9px",
-        fontSize: 11,
-        fontWeight: 700
-      }
-    }, "\u903E\u671F")), /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: "#0e1e2a",
-        border: `1px solid ${C.red}33`,
-        borderRadius: 9,
-        padding: "18px 14px",
-        textAlign: "center"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 32,
-        marginBottom: 8
-      }
-    }, "\uD83D\uDE22"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        fontWeight: 700,
-        color: C.redLt,
-        marginBottom: 4
-      }
-    }, "\u7E73\u4EA4\u671F\u9650\u5DF2\u904E\uFF0C\u7121\u6CD5\u7E73\u4EA4"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: C.muted,
-        marginBottom: 10
-      }
-    }, "\u5982\u6709\u7591\u554F\u8ACB\u806F\u7D61\u4EFB\u8AB2\u6559\u6388"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        background: "#2a0a0a",
-        color: C.redLt,
-        border: `1px solid ${C.red}55`,
-        borderRadius: 8,
-        padding: "7px 14px",
-        fontSize: 12,
-        fontWeight: 600,
-        userSelect: "text",
-        cursor: "text"
-      }
-    }, "\u2709 \u674E\u826F\u4E00\u6559\u6388\uFF1A", /*#__PURE__*/React.createElement("span", {
-      style: {
-        userSelect: "all"
-      }
-    }, "li@gmail.com"))));
+    return React.createElement("div", { ref: rootRef, style: { background: "#1c0a0a", border: `1px solid ${C.red}44`, borderRadius: 10, padding: "14px 14px" } },
+      React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 8 } },
+        React.createElement("div", { style: { flex: 1 } },
+          React.createElement("div", { style: { fontSize: 10, fontWeight: 700, color: C.mutedMid, marginBottom: 1 } }, assignment.ch),
+          React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: C.muted, lineHeight: 1.3, marginBottom: 2 } }, assignment.label),
+          React.createElement("div", { style: { fontSize: 11, color: C.muted } }, assignment.name)),
+        React.createElement("div", { style: { background: "#2a0a0a", color: C.redLt, border: `1px solid ${C.red}`, borderRadius: 7, padding: "4px 9px", fontSize: 11, fontWeight: 700 } }, "逾期")),
+      React.createElement("div", { style: { background: "#0e1e2a", border: `1px solid ${C.red}33`, borderRadius: 9, padding: "18px 14px", textAlign: "center" } },
+        React.createElement("div", { style: { fontSize: 32, marginBottom: 8 } }, "😢"),
+        React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: C.redLt, marginBottom: 4 } }, "繳交期限已過，無法繳交"),
+        React.createElement("div", { style: { fontSize: 11, color: C.muted } }, "如有疑問請聯絡任課教授")));
   }
+
   const isSubmitted = assignment.submitted || !!uploadedName;
   const st = isSubmitted ? "submitted" : "pending";
   const sm = statusMeta[st];
   const canSubmit = !!fileName && rating > 0;
   const showRatingWarn = !!fileName && rating === 0;
+
   function handleSubmit() {
     if (!canSubmit) return;
+    const now = "2026-05-07 08:" + String(20 + Math.floor(Math.random() * 30)).padStart(2, "0");
+    setReceipt({ name: fileName, time: now, code: "#" + assignment.ch.replace(/[^0-9]/g, "") + "-0507" });
     setUploadedName(fileName);
     setUploadedRating(rating);
     setFileName(null);
     setRating(0);
   }
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: "#0e1e2a",
-      border: `1px solid ${C.border}`,
-      borderRadius: 10,
-      padding: "12px 13px"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      marginBottom: 10,
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      fontWeight: 700,
-      color: C.mutedMid,
-      marginBottom: 1
-    }
-  }, assignment.ch), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: C.text,
-      lineHeight: 1.3,
-      marginBottom: 2
-    }
-  }, assignment.label), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: C.muted,
-      lineHeight: 1.3
-    }
-  }, assignment.name), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 12,
-      marginTop: 6
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 4
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 9,
-      color: C.muted
-    }
-  }, "\u767C\u5E03"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      fontWeight: 600,
-      color: C.muted
-    }
-  }, fmt(assignment.start))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 4
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 9,
-      color: C.muted
-    }
-  }, "\u622A\u6B62"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: daysUntil(assignment.end) <= 3 && !isSubmitted ? C.redLt : daysUntil(assignment.end) <= 7 && !isSubmitted ? C.amber : C.tealLt
-    }
-  }, fmt(assignment.end)), !isSubmitted && daysUntil(assignment.end) >= 0 && /*#__PURE__*/React.createElement(DeadlineBadge, {
-    end: assignment.end
-  })))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: sm.bg,
-      color: sm.color,
-      border: `1px solid ${sm.border}`,
-      borderRadius: 7,
-      padding: "4px 9px",
-      fontSize: 11,
-      fontWeight: 700,
-      whiteSpace: "nowrap"
-    }
-  }, sm.label)), isSubmitted && /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      border: `1px solid ${C.border}`,
-      borderRadius: 8,
-      padding: "10px 12px",
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      marginBottom: 8
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 15
-    }
-  }, "\uD83D\uDCCE"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      fontWeight: 600,
-      color: C.tealLt
-    }
-  }, uploadedName), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: "#4ade80",
-      marginTop: 1
-    }
-  }, "\u2713 \u4E0A\u50B3\u6210\u529F")), uploadedRating > 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "right"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.muted,
-      marginBottom: 2
-    }
-  }, "\u96E3\u5EA6\u81EA\u8A55"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12
-    }
-  }, "★".repeat(uploadedRating), "☆".repeat(5 - uploadedRating)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.amber
-    }
-  }, STAR_LABELS[uploadedRating]))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      borderTop: `1px solid ${C.border}`,
-      paddingTop: 8,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.muted
-    }
-  }, "\u6279\u6539\u6210\u7E3E"), assignment.score !== null ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 20,
-      fontWeight: 900,
-      color: C.amber,
-      lineHeight: 1
-    }
-  }, assignment.score, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      color: C.muted
-    }
-  }, " \u5206")) : /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      fontWeight: 600,
-      color: C.muted
-    }
-  }, "\u672A\u6279\u6539"))), !isSubmitted && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      border: `1px solid ${showRatingWarn ? C.amber : C.border}`,
-      borderRadius: 8,
-      padding: "10px 12px",
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement(StarRating, {
-    value: rating,
-    onChange: setRating
-  }), showRatingWarn && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 8,
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      background: "#2a1c05",
-      border: `1px solid ${C.amber}44`,
-      borderRadius: 6,
-      padding: "6px 10px"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 14
-    }
-  }, "\u26A0\uFE0F"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      color: C.amber,
-      fontWeight: 600
-    }
-  }, "\u8ACB\u5148\u5B8C\u6210\u96E3\u5EA6\u81EA\u8A55\uFF0C\u624D\u80FD\u7E73\u4EA4\u4F5C\u696D"))), /*#__PURE__*/React.createElement("div", {
-    onDragOver: e => {
-      e.preventDefault();
-      setDragging(true);
-    },
-    onDragLeave: () => setDragging(false),
-    onDrop: e => {
-      e.preventDefault();
-      setDragging(false);
-      const f = e.dataTransfer.files[0];
-      if (f) setFileName(f.name);
-    },
-    style: {
-      border: `2px dashed ${dragging ? C.teal : fileName ? C.teal + "44" : C.border}`,
-      borderRadius: 9,
-      padding: "14px 12px",
-      textAlign: "center",
-      background: dragging ? C.tealBg : "transparent",
-      transition: "all .15s"
-    }
-  }, fileName ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 16
-    }
-  }, "\uD83D\uDCCE"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      color: C.tealLt,
-      fontWeight: 600
-    }
-  }, fileName), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setFileName(null),
-    style: {
-      background: "none",
-      border: "none",
-      color: C.muted,
-      cursor: "pointer",
-      fontSize: 14
-    }
-  }, "\xD7")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 20,
-      marginBottom: 5
-    }
-  }, "\uD83D\uDCC1"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: C.muted
-    }
-  }, "\u62D6\u66F3\u6A94\u6848\u81F3\u6B64\u6216"), /*#__PURE__*/React.createElement("label", {
-    style: {
-      display: "inline-block",
-      marginTop: 6,
-      cursor: "pointer"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      background: C.teal,
-      color: "#fff",
-      borderRadius: 7,
-      padding: "5px 14px",
-      fontSize: 12,
-      fontWeight: 600
-    }
-  }, "\u9078\u64C7\u6A94\u6848"), /*#__PURE__*/React.createElement("input", {
-    type: "file",
-    style: {
-      display: "none"
-    },
-    onChange: e => {
-      if (e.target.files[0]) setFileName(e.target.files[0].name);
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.muted,
-      marginTop: 5
-    }
-  }, "\u5EFA\u8B70\u4E0A\u50B3 PDF \u6216 .ZIP \u6A94"))), /*#__PURE__*/React.createElement("button", {
-    onClick: handleSubmit,
-    disabled: !canSubmit,
-    style: {
-      width: "100%",
-      marginTop: 10,
-      background: canSubmit ? C.teal : "#162736",
-      color: canSubmit ? "#fff" : C.muted,
-      border: showRatingWarn ? `1px solid ${C.amber}55` : "none",
-      borderRadius: 8,
-      padding: "10px 0",
-      fontSize: 13,
-      fontWeight: 700,
-      cursor: canSubmit ? "pointer" : "default",
-      transition: "all .15s"
-    }
-  }, !fileName ? "尚未選擇檔案" : !rating ? "⚠ 請先完成難度自評" : "✓ 確認繳交")));
-}
-function CourseInnerPage({
-  course,
-  onBack,
-  notifOpen,
-  setNotifOpen
-}) {
-  var _unwatchedVideos$;
-  const [tab, setTab] = useState("content");
-  const assignments = mockAssignments[course.id] || [];
-  const content = mockCourseContent[course.id] || {
-    videos: [],
-    assignments: [],
-    answers: []
-  };
-  const statusMeta = {
-    submitted: {
-      label: "已繳交",
-      color: "#4ade80",
-      bg: "#052a15",
-      border: "#14532d"
-    },
-    pending: {
-      label: "待繳交",
-      color: C.amber,
-      bg: C.amberBg,
-      border: C.amber
-    },
-    overdue: {
-      label: "逾期",
-      color: C.redLt,
-      bg: "#2a0a0a",
-      border: C.red
-    }
-  };
 
-  // Sort: watched newest→oldest (descending CH), then unwatched ascending
-  const chNum = s => {
-    const m = s.match(/[\d.]+/);
-    return m ? parseFloat(m[0]) : 0;
+  function downloadReceipt() {
+    const txt = "===== 繳交證明 Submission Receipt =====\n" +
+      "課程：計算機概論 (CS101)\n" +
+      "作業：" + assignment.label + " " + assignment.name + "\n" +
+      "檔名：" + receipt.name + "\n" +
+      "繳交時間：" + receipt.time + "\n" +
+      "繳交編號：" + receipt.code + "\n" +
+      "難度自評：" + "★".repeat(uploadedRating) + "☆".repeat(5 - uploadedRating) + " (" + STAR_LABELS[uploadedRating] + ")\n" +
+      "狀態：✓ 上傳成功\n" +
+      "=====================================";
+    downloadText("繳交證明_" + assignment.label, txt);
+  }
+
+  return React.createElement("div", { ref: rootRef, style: { background: "#0e1e2a", border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 13px" } },
+    React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 8 } },
+      React.createElement("div", { style: { flex: 1 } },
+        React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: C.mutedMid, marginBottom: 1 } }, assignment.ch),
+        React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: C.text, lineHeight: 1.3, marginBottom: 2 } }, assignment.label),
+        React.createElement("div", { style: { fontSize: 11, color: C.muted, lineHeight: 1.3 } }, assignment.name),
+        React.createElement("div", { style: { display: "flex", gap: 12, marginTop: 6 } },
+          React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 4 } },
+            React.createElement("span", { style: { fontSize: 9, color: C.muted } }, "發布"),
+            React.createElement("span", { style: { fontSize: 11, fontWeight: 600, color: C.muted } }, fmt(assignment.start))),
+          React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 4 } },
+            React.createElement("span", { style: { fontSize: 9, color: C.muted } }, "截止"),
+            React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: daysUntil(assignment.end) <= 3 && !isSubmitted ? C.redLt : daysUntil(assignment.end) <= 7 && !isSubmitted ? C.amber : C.tealLt } }, fmt(assignment.end)),
+            !isSubmitted && daysUntil(assignment.end) >= 0 && React.createElement(DeadlineBadge, { end: assignment.end })))),
+      React.createElement("div", { style: { background: sm.bg, color: sm.color, border: `1px solid ${sm.border}`, borderRadius: 7, padding: "4px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" } }, sm.label)),
+
+    // ---- 改進 B：繳交成功回條卡 ----
+    isSubmitted && React.createElement("div", { style: { background: "#0a2218", border: `1px solid ${C.teal}66`, borderRadius: 8, padding: "12px 13px", marginBottom: 10 } },
+      React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 10 } },
+        React.createElement("span", { style: { width: 22, height: 22, borderRadius: "50%", background: C.teal, color: "#fff", fontSize: 13, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" } }, "✓"),
+        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: "#4ade80" } }, "繳交成功，已收到你的作業")),
+      receipt && React.createElement("div", { style: { background: "#08160f", border: `1px solid ${C.teal}33`, borderRadius: 7, padding: "10px 12px", marginBottom: 10 } },
+        [["檔名", receipt.name], ["繳交時間", receipt.time], ["繳交編號", receipt.code]].map((row, i) =>
+          React.createElement("div", { key: i, style: { display: "flex", justifyContent: "space-between", padding: "3px 0" } },
+            React.createElement("span", { style: { fontSize: 10, color: C.muted } }, row[0]),
+            React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: row[0] === "繳交編號" ? C.tealLt : C.text, fontFamily: row[0] === "繳交編號" ? "monospace" : "inherit" } }, row[1]))),
+        uploadedRating > 0 && React.createElement("div", { style: { display: "flex", justifyContent: "space-between", padding: "3px 0", borderTop: `1px solid ${C.teal}22`, marginTop: 3, paddingTop: 6 } },
+          React.createElement("span", { style: { fontSize: 10, color: C.muted } }, "難度自評"),
+          React.createElement("span", { style: { fontSize: 11, color: C.amber } }, "★".repeat(uploadedRating) + "☆".repeat(5 - uploadedRating) + " " + STAR_LABELS[uploadedRating]))),
+      React.createElement("button", { onClick: downloadReceipt, style: { width: "100%", background: C.tealBg, color: C.tealLt, border: `1px solid ${C.teal}66`, borderRadius: 7, padding: "8px 0", fontSize: 12, fontWeight: 700, cursor: "pointer" } }, "↓ 下載繳交證明"),
+      assignment.score !== null && React.createElement("div", { style: { borderTop: `1px solid ${C.teal}22`, marginTop: 10, paddingTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center" } },
+        React.createElement("span", { style: { fontSize: 10, color: C.muted } }, "批改成績"),
+        React.createElement("span", { style: { fontSize: 20, fontWeight: 900, color: C.amber, lineHeight: 1 } }, assignment.score, React.createElement("span", { style: { fontSize: 11, color: C.muted } }, " 分")))),
+
+    !isSubmitted && React.createElement(React.Fragment, null,
+      React.createElement("div", { style: { background: C.card, border: `1px solid ${showRatingWarn ? C.amber : C.border}`, borderRadius: 8, padding: "10px 12px", marginBottom: 10 } },
+        React.createElement(StarRating, { value: rating, onChange: setRating }),
+        showRatingWarn && React.createElement("div", { style: { marginTop: 8, display: "flex", alignItems: "center", gap: 6, background: "#2a1c05", border: `1px solid ${C.amber}44`, borderRadius: 6, padding: "6px 10px" } },
+          React.createElement("span", { style: { fontSize: 14 } }, "⚠️"),
+          React.createElement("span", { style: { fontSize: 11, color: C.amber, fontWeight: 600 } }, "請先完成難度自評，才能繳交作業"))),
+      React.createElement("div", {
+        onDragOver: e => { e.preventDefault(); setDragging(true); },
+        onDragLeave: () => setDragging(false),
+        onDrop: e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) setFileName(f.name); },
+        style: { border: `2px dashed ${dragging ? C.teal : fileName ? C.teal + "44" : C.border}`, borderRadius: 9, padding: "14px 12px", textAlign: "center", background: dragging ? C.tealBg : "transparent", transition: "all .15s" }
+      },
+        fileName ? React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "center", gap: 8 } },
+          React.createElement("span", { style: { fontSize: 16 } }, "📎"),
+          React.createElement("span", { style: { fontSize: 12, color: C.tealLt, fontWeight: 600 } }, fileName),
+          React.createElement("button", { onClick: () => setFileName(null), style: { background: "none", border: "none", color: C.muted, cursor: "pointer", fontSize: 14 } }, "×"))
+          : React.createElement(React.Fragment, null,
+            React.createElement("div", { style: { fontSize: 20, marginBottom: 5 } }, "📁"),
+            React.createElement("div", { style: { fontSize: 12, color: C.muted } }, "拖曳檔案至此或"),
+            React.createElement("label", { style: { display: "inline-block", marginTop: 6, cursor: "pointer" } },
+              React.createElement("span", { style: { background: C.teal, color: "#fff", borderRadius: 7, padding: "5px 14px", fontSize: 12, fontWeight: 600 } }, "選擇檔案"),
+              React.createElement("input", { type: "file", style: { display: "none" }, onChange: e => { if (e.target.files[0]) setFileName(e.target.files[0].name); } })),
+            React.createElement("div", { style: { fontSize: 10, color: C.muted, marginTop: 5 } }, "建議上傳 PDF 或 .ZIP 檔"))),
+      // ---- 改進 C：灰色按鈕 hover 顯示原因 ----
+      React.createElement("button", {
+        onClick: handleSubmit,
+        disabled: !canSubmit,
+        onMouseEnter: () => setHintHover(true),
+        onMouseLeave: () => setHintHover(false),
+        title: !fileName ? "請先選擇要繳交的檔案" : !rating ? "請先完成難度自評（必填）才能繳交" : "",
+        style: { width: "100%", marginTop: 10, background: canSubmit ? C.teal : "#162736", color: canSubmit ? "#fff" : C.muted, border: showRatingWarn ? `1px solid ${C.amber}55` : "none", borderRadius: 8, padding: "10px 0", fontSize: 13, fontWeight: 700, cursor: canSubmit ? "pointer" : "not-allowed", transition: "all .15s" }
+      }, !fileName ? "尚未選擇檔案" : !rating ? "⚠ 請先完成難度自評" : "✓ 確認繳交"),
+      hintHover && !canSubmit && React.createElement("div", { style: { marginTop: 6, fontSize: 10, color: C.amber, textAlign: "center" } },
+        !fileName ? "為什麼不能按？→ 還沒選擇檔案" : "為什麼不能按？→ 難度自評為必填，填完即可繳交")));
+}
+
+function CourseInnerPage({ course, onBack, notifOpen, setNotifOpen, anchorId }) {
+  var _unwatchedVideos$;
+  // 改進 A：若帶入 anchorId，自動切到作業分頁
+  const [tab, setTab] = useState(anchorId ? "assignments" : "content");
+  const assignments = mockAssignments[course.id] || [];
+  const content = mockCourseContent[course.id] || { videos: [], assignments: [], answers: [] };
+  const statusMeta = {
+    submitted: { label: "已繳交", color: "#4ade80", bg: "#052a15", border: "#14532d" },
+    pending: { label: "待繳交", color: C.amber, bg: C.amberBg, border: C.amber },
+    overdue: { label: "逾期", color: C.redLt, bg: "#2a0a0a", border: C.red }
   };
+  const chNum = s => { const m = s.match(/[\d.]+/); return m ? parseFloat(m[0]) : 0; };
   const watchedVideos = [...content.videos].filter(v => v.watched).sort((a, b) => chNum(b.ch) - chNum(a.ch));
   const unwatchedVideos = [...content.videos].filter(v => !v.watched).sort((a, b) => chNum(a.ch) - chNum(b.ch));
-  const sortedVideos = [...unwatchedVideos, ...watchedVideos]; // unwatched on top
+  const sortedVideos = [...unwatchedVideos, ...watchedVideos];
   const nextUnwatchedId = (_unwatchedVideos$ = unwatchedVideos[0]) === null || _unwatchedVideos$ === void 0 ? void 0 : _unwatchedVideos$.id;
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Header, {
-    title: course.name,
-    sub: course.code,
-    onBack: onBack,
-    notifOpen: notifOpen,
-    setNotifOpen: setNotifOpen
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      background: C.panel,
-      borderBottom: `1px solid ${C.border}`
-    }
-  }, [["content", "課程內容"], ["assignments", "作業"]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
-    key: k,
-    onClick: () => setTab(k),
-    style: {
-      flex: 1,
-      background: "none",
-      border: "none",
-      borderBottom: tab === k ? `2px solid ${C.teal}` : "2px solid transparent",
-      color: tab === k ? C.teal : C.muted,
-      padding: "13px 0",
-      fontSize: 13,
-      fontWeight: 700,
-      cursor: "pointer"
-    }
-  }, l))), tab === "content" && /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "14px 16px 0"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      fontWeight: 700,
-      color: C.muted,
-      letterSpacing: .5,
-      marginBottom: 8
-    }
-  }, "\u5F71\u7247\u89C0\u770B\u78BA\u8A8D", /*#__PURE__*/React.createElement("span", {
-    style: {
-      marginLeft: 8,
-      fontSize: 10,
-      fontWeight: 400,
-      color: C.mutedMid
-    }
-  }, content.videos.filter(v => v.watched).length, "/", content.videos.length, " \u90E8\u5DF2\u89C0\u770B")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      border: `1px solid ${C.border}`,
-      borderRadius: 12,
-      overflow: "hidden"
-    }
-  }, sortedVideos.map((v, idx) => {
-    const isNext = v.id === nextUnwatchedId;
-    const isLocked = !v.watched && !isNext;
-    return /*#__PURE__*/React.createElement("div", {
-      key: v.id,
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "11px 13px",
-        borderBottom: idx < sortedVideos.length - 1 ? `1px solid #132030` : "none",
-        background: isNext ? "#0d2030" : "transparent",
-        opacity: isLocked ? 0.4 : 1
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        width: 30,
-        height: 30,
-        borderRadius: "50%",
-        flexShrink: 0,
-        background: v.watched ? C.tealBg : isNext ? "#1a3a50" : "#162030",
-        border: `1px solid ${v.watched ? C.teal + "55" : isNext ? C.teal + "44" : C.border}`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: 11,
-        color: v.watched ? C.teal : isNext ? C.tealLt : C.mutedMid
-      }
-    }, v.watched ? "✓" : isLocked ? "🔒" : "▶"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1,
-        minWidth: 0
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        fontWeight: 700,
-        color: C.mutedMid,
-        marginBottom: 1
-      }
-    }, v.ch), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 12,
-        fontWeight: 600,
-        color: v.watched ? C.muted : isNext ? C.text : C.muted,
-        lineHeight: 1.3
-      }
-    }, v.title), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 10,
-        color: C.muted,
-        marginTop: 2,
-        display: "flex",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("span", null, "\u23F1 ", v.duration), v.watched && v.watchedAt && /*#__PURE__*/React.createElement("span", null, "\u89C0\u770B\u65BC ", fmt(v.watchedAt)))), /*#__PURE__*/React.createElement(Chip, {
-      label: v.watched ? "已觀看" : isNext ? "待觀看" : "未解鎖",
-      color: v.watched ? "#4ade80" : isNext ? C.amber : C.muted,
-      bg: v.watched ? "#052a15" : isNext ? C.amberBg : "transparent",
-      border: v.watched ? "#14532d" : isNext ? C.amber : C.border
-    }));
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 10
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: C.tealLt,
-      letterSpacing: .3,
-      marginBottom: 7,
-      display: "flex",
-      alignItems: "center",
-      gap: 5
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      width: 8,
-      height: 8,
-      borderRadius: "50%",
-      background: C.teal,
-      display: "inline-block"
-    }
-  }), "\u4F5C\u696D\u767C\u5E03"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      border: `1px solid ${C.border}`,
-      borderRadius: 10,
-      overflow: "hidden"
-    }
-  }, [...content.assignments].reverse().map((r, idx) => /*#__PURE__*/React.createElement("div", {
-    key: r.id,
-    style: {
-      padding: "9px 11px",
-      borderBottom: idx < content.assignments.length - 1 ? `1px solid #132030` : "none",
-      display: "flex",
-      flexDirection: "column",
-      gap: 3
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: C.text,
-      lineHeight: 1.3
-    }
-  }, r.title), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.muted
-    }
-  }, r.label), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginTop: 2
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 9,
-      color: C.muted
-    }
-  }, fmt(r.date)), /*#__PURE__*/React.createElement("button", {
-    onClick: () => r.content && downloadText(r.title, r.content),
-    style: {
-      background: r.content ? C.tealBg : "#0e1e2a",
-      color: r.content ? C.tealLt : C.muted,
-      border: `1px solid ${r.content ? C.teal + "44" : C.border}`,
-      borderRadius: 5,
-      padding: "2px 8px",
-      fontSize: 10,
-      fontWeight: 600,
-      cursor: r.content ? "pointer" : "default"
-    }
-  }, "\u2193 \u4E0B\u8F09")))))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: C.amber,
-      letterSpacing: .3,
-      marginBottom: 7,
-      display: "flex",
-      alignItems: "center",
-      gap: 5
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      width: 8,
-      height: 8,
-      borderRadius: "50%",
-      background: C.amber,
-      display: "inline-block"
-    }
-  }), "\u516C\u544A\u89E3\u7B54"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      border: `1px solid ${C.border}`,
-      borderRadius: 10,
-      overflow: "hidden"
-    }
-  }, [...content.answers].reverse().map((r, idx) => /*#__PURE__*/React.createElement("div", {
-    key: r.id,
-    style: {
-      padding: "9px 11px",
-      borderBottom: idx < content.answers.length - 1 ? `1px solid #132030` : "none",
-      display: "flex",
-      flexDirection: "column",
-      gap: 3
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: C.text,
-      lineHeight: 1.3
-    }
-  }, r.title), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.muted
-    }
-  }, r.label), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginTop: 2
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 9,
-      color: C.muted
-    }
-  }, fmt(r.date)), /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => e.preventDefault(),
-    style: {
-      background: C.amberBg,
-      color: C.amber,
-      border: `1px solid ${C.amber}44`,
-      borderRadius: 5,
-      padding: "2px 8px",
-      fontSize: 10,
-      fontWeight: 600,
-      textDecoration: "none"
-    }
-  }, "\u2193 \u4E0B\u8F09"))))))))), tab === "assignments" && /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "14px 16px 0",
-      display: "flex",
-      flexDirection: "column",
-      gap: 12
-    }
-  }, [...assignments].reverse().map(a => /*#__PURE__*/React.createElement(SubmitZone, {
-    key: a.id,
-    assignment: a,
-    statusMeta: statusMeta
-  }))));
+
+  return React.createElement("div", null,
+    React.createElement(Header, { title: course.name, sub: course.code, onBack, notifOpen, setNotifOpen,
+      onJump: () => setTab("assignments") }),
+    React.createElement("div", { style: { display: "flex", background: C.panel, borderBottom: `1px solid ${C.border}` } },
+      [["content", "課程內容"], ["assignments", "作業"]].map(([k, l]) =>
+        React.createElement("button", { key: k, onClick: () => setTab(k), style: { flex: 1, background: "none", border: "none", borderBottom: tab === k ? `2px solid ${C.teal}` : "2px solid transparent", color: tab === k ? C.teal : C.muted, padding: "13px 0", fontSize: 13, fontWeight: 700, cursor: "pointer" } },
+          l,
+          // 作業分頁顯示待繳數，強化入口可見性（輔助改進 A）
+          k === "assignments" && pendingCount(course.id) > 0 && React.createElement("span", { style: { marginLeft: 6, background: C.red, color: "#fff", borderRadius: 99, fontSize: 10, fontWeight: 800, padding: "1px 6px" } }, pendingCount(course.id))))),
+
+    tab === "content" && React.createElement("div", { style: { padding: "14px 16px 0" } },
+      React.createElement("div", { style: { marginBottom: 14 } },
+        React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: .5, marginBottom: 8 } }, "影片觀看確認",
+          React.createElement("span", { style: { marginLeft: 8, fontSize: 10, fontWeight: 400, color: C.mutedMid } }, content.videos.filter(v => v.watched).length, "/", content.videos.length, " 部已觀看")),
+        React.createElement("div", { style: { background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" } },
+          sortedVideos.map((v, idx) => {
+            const isNext = v.id === nextUnwatchedId;
+            const isLocked = !v.watched && !isNext;
+            return React.createElement("div", { key: v.id, style: { display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", borderBottom: idx < sortedVideos.length - 1 ? `1px solid #132030` : "none", background: isNext ? "#0d2030" : "transparent", opacity: isLocked ? 0.4 : 1 } },
+              React.createElement("div", { style: { width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: v.watched ? C.tealBg : isNext ? "#1a3a50" : "#162030", border: `1px solid ${v.watched ? C.teal + "55" : isNext ? C.teal + "44" : C.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: v.watched ? C.teal : isNext ? C.tealLt : C.mutedMid } }, v.watched ? "✓" : isLocked ? "🔒" : "▶"),
+              React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.mutedMid, marginBottom: 1 } }, v.ch),
+                React.createElement("div", { style: { fontSize: 12, fontWeight: 600, color: v.watched ? C.muted : isNext ? C.text : C.muted, lineHeight: 1.3 } }, v.title),
+                React.createElement("div", { style: { fontSize: 10, color: C.muted, marginTop: 2, display: "flex", gap: 8 } },
+                  React.createElement("span", null, "⏱ ", v.duration),
+                  v.watched && v.watchedAt && React.createElement("span", null, "觀看於 ", fmt(v.watchedAt)))),
+              React.createElement(Chip, { label: v.watched ? "已觀看" : isNext ? "待觀看" : "未解鎖", color: v.watched ? "#4ade80" : isNext ? C.amber : C.muted, bg: v.watched ? "#052a15" : isNext ? C.amberBg : "transparent", border: v.watched ? "#14532d" : isNext ? C.amber : C.border }));
+          }))),
+      React.createElement("div", { style: { marginBottom: 14 } },
+        React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } },
+          React.createElement("div", null,
+            React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.tealLt, letterSpacing: .3, marginBottom: 7, display: "flex", alignItems: "center", gap: 5 } },
+              React.createElement("span", { style: { width: 8, height: 8, borderRadius: "50%", background: C.teal, display: "inline-block" } }), "作業發布"),
+            React.createElement("div", { style: { background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" } },
+              [...content.assignments].reverse().map((r, idx) =>
+                React.createElement("div", { key: r.id, style: { padding: "9px 11px", borderBottom: idx < content.assignments.length - 1 ? `1px solid #132030` : "none", display: "flex", flexDirection: "column", gap: 3 } },
+                  React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.text, lineHeight: 1.3 } }, r.title),
+                  React.createElement("div", { style: { fontSize: 9, color: C.muted } }, r.label),
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 2 } },
+                    React.createElement("span", { style: { fontSize: 9, color: C.muted } }, fmt(r.date)),
+                    React.createElement("button", { onClick: () => r.content && downloadText(r.title, r.content), style: { background: r.content ? C.tealBg : "#0e1e2a", color: r.content ? C.tealLt : C.muted, border: `1px solid ${r.content ? C.teal + "44" : C.border}`, borderRadius: 5, padding: "2px 8px", fontSize: 10, fontWeight: 600, cursor: r.content ? "pointer" : "default" } }, "↓ 下載"))))) ),
+          React.createElement("div", null,
+            React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.amber, letterSpacing: .3, marginBottom: 7, display: "flex", alignItems: "center", gap: 5 } },
+              React.createElement("span", { style: { width: 8, height: 8, borderRadius: "50%", background: C.amber, display: "inline-block" } }), "公告解答"),
+            React.createElement("div", { style: { background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" } },
+              [...content.answers].reverse().map((r, idx) =>
+                React.createElement("div", { key: r.id, style: { padding: "9px 11px", borderBottom: idx < content.answers.length - 1 ? `1px solid #132030` : "none", display: "flex", flexDirection: "column", gap: 3 } },
+                  React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.text, lineHeight: 1.3 } }, r.title),
+                  React.createElement("div", { style: { fontSize: 9, color: C.muted } }, r.label),
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 2 } },
+                    React.createElement("span", { style: { fontSize: 9, color: C.muted } }, fmt(r.date)),
+                    React.createElement("a", { href: "#", onClick: e => e.preventDefault(), style: { background: C.amberBg, color: C.amber, border: `1px solid ${C.amber}44`, borderRadius: 5, padding: "2px 8px", fontSize: 10, fontWeight: 600, textDecoration: "none" } }, "↓ 下載"))))) )))),
+
+    tab === "assignments" && React.createElement("div", { style: { padding: "14px 16px 0", display: "flex", flexDirection: "column", gap: 12 } },
+      [...assignments].reverse().map(a =>
+        React.createElement(SubmitZone, { key: a.id, assignment: a, statusMeta, highlight: a.id === anchorId }))));
 }
-function StatusBadge({
-  status
-}) {
+
+function StatusBadge({ status }) {
   if (!status) return null;
-  if (status === "missing") return /*#__PURE__*/React.createElement("span", {
-    style: {
-      border: `1px solid ${C.red}`,
-      color: C.redLt,
-      borderRadius: 99,
-      padding: "2px 8px",
-      fontSize: 10,
-      fontWeight: 600,
-      whiteSpace: "nowrap"
-    }
-  }, "missing");
-  if (status === "late") return /*#__PURE__*/React.createElement("span", {
-    style: {
-      border: `1px solid #38bdf8`,
-      color: "#38bdf8",
-      borderRadius: 99,
-      padding: "2px 8px",
-      fontSize: 10,
-      fontWeight: 600,
-      whiteSpace: "nowrap"
-    }
-  }, "late");
+  if (status === "missing") return React.createElement("span", { style: { border: `1px solid ${C.red}`, color: C.redLt, borderRadius: 99, padding: "2px 8px", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap" } }, "missing");
+  if (status === "late") return React.createElement("span", { style: { border: `1px solid #38bdf8`, color: "#38bdf8", borderRadius: 99, padding: "2px 8px", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap" } }, "late");
   return null;
 }
 
-
-function ExamPage({
-  course,
-  onBack,
-  notifOpen,
-  setNotifOpen
-}) {
+function ExamPage({ course, onBack, notifOpen, setNotifOpen }) {
   const exams = mockExams[course.id] || [];
   const weights = mockGradeWeights[course.id] || [];
-  const done = exams.filter(e => e.score !== null);
-  const avg = done.length ? (done.reduce((s, e) => s + e.score, 0) / done.length).toFixed(1) : "—";
-  const COL = {
-    name: 3,
-    due: 2.2,
-    submitted: 2.2,
-    status: 1.2,
-    score: 1.5
-  };
+  const COL = { name: 3, due: 2.2, submitted: 2.2, status: 1.2, score: 1.5 };
   const SCORE_COLOR = C.amber;
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Header, {
-    title: "\u6210\u7E3E\u4E00\u89BD",
-    sub: `${course.code} ${course.name}`,
-    onBack: onBack,
-    notifOpen: notifOpen,
-    setNotifOpen: setNotifOpen
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      margin: "14px 16px 0",
-      background: C.card,
-      border: `1px solid ${C.border}`,
-      borderRadius: 12,
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "10px 14px 8px",
-      borderBottom: `1px solid ${C.border}`,
-      background: "#0e1e2a"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: C.text
-    }
-  }, "\u6240\u6709\u6210\u7E3E")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      padding: "8px 14px",
-      borderBottom: `1px solid ${C.border}`,
-      background: "#0d1a24"
-    }
-  }, [["名稱", COL.name], ["截止日", COL.due], ["繳交時間", COL.submitted], ["狀態", COL.status], ["成績", COL.score]].map(([label, f]) => /*#__PURE__*/React.createElement("div", {
-    key: label,
-    style: {
-      flex: f,
-      fontSize: 9,
-      fontWeight: 700,
-      color: C.muted,
-      letterSpacing: .5
-    }
-  }, label))), exams.map((e, idx) => {
-    const hasScore = e.score !== null;
-    return /*#__PURE__*/React.createElement("div", {
-      key: e.id,
-      style: {
-        borderBottom: idx < exams.length - 1 ? `1px solid #132030` : "none"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        padding: "11px 14px"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: COL.name,
-        paddingRight: 8
-      }
-    }, e.isHw && /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 8,
-        color: C.teal,
-        fontWeight: 700,
-        marginBottom: 2
-      }
-    }, "\u4F5C\u696D"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        fontWeight: 600,
-        color: hasScore ? C.text : C.muted,
-        lineHeight: 1.3
-      }
-    }, e.name)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: COL.due,
-        paddingRight: 4
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: C.muted
-      }
-    }, fmt(e.due))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: COL.submitted,
-        paddingRight: 4
-      }
-    }, e.submitted ? /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: C.muted
-      }
-    }, fmt(e.submitted)) : /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#2a3a4a"
-      }
-    }, "\u2014")), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: COL.status
-      }
-    }, /*#__PURE__*/React.createElement(StatusBadge, {
-      status: e.status
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: COL.score,
-        textAlign: "right"
-      }
-    }, hasScore ? /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 14,
-        fontWeight: 800,
-        color: SCORE_COLOR
-      }
-    }, e.score, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 10,
-        color: C.muted,
-        fontWeight: 400
-      }
-    }, " / ", e.outOf)) : /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 11,
-        color: "#2a3a4a"
-      }
-    }, "\u2014"))));
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      margin: "12px 16px 16px",
-      background: C.card,
-      border: `1px solid ${C.border}`,
-      borderRadius: 12,
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "10px 14px 8px",
-      borderBottom: `1px solid ${C.border}`,
-      background: "#0e1e2a"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: C.text
-    }
-  }, "\u6210\u7E3E\u52A0\u6B0A\u6BD4\u4F8B"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.muted,
-      marginTop: 2
-    }
-  }, "\u5404\u9805\u76EE\u4F9D\u6BD4\u4F8B\u8A08\u5165\u6700\u7D42\u6210\u7E3E")), weights.map((w, idx) => /*#__PURE__*/React.createElement("div", {
-    key: idx,
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "10px 14px",
-      borderBottom: idx < weights.length - 1 ? `1px solid #132030` : "none",
-      background: w.isTotal ? "#0e1e2a" : "transparent"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 13,
-      fontWeight: w.isTotal ? 700 : 400,
-      color: w.isTotal ? C.text : C.muted
-    }
-  }, w.group), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: w.isTotal ? C.amber : C.text
-    }
-  }, w.weight, "%")))));
+  return React.createElement("div", null,
+    React.createElement(Header, { title: "成績一覽", sub: `${course.code} ${course.name}`, onBack, notifOpen, setNotifOpen }),
+    React.createElement("div", { style: { margin: "14px 16px 0", background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" } },
+      React.createElement("div", { style: { padding: "10px 14px 8px", borderBottom: `1px solid ${C.border}`, background: "#0e1e2a" } },
+        React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.text } }, "所有成績")),
+      React.createElement("div", { style: { display: "flex", padding: "8px 14px", borderBottom: `1px solid ${C.border}`, background: "#0d1a24" } },
+        [["名稱", COL.name], ["截止日", COL.due], ["繳交時間", COL.submitted], ["狀態", COL.status], ["成績", COL.score]].map(([label, f]) =>
+          React.createElement("div", { key: label, style: { flex: f, fontSize: 9, fontWeight: 700, color: C.muted, letterSpacing: .5 } }, label))),
+      exams.map((e, idx) => {
+        const hasScore = e.score !== null;
+        return React.createElement("div", { key: e.id, style: { borderBottom: idx < exams.length - 1 ? `1px solid #132030` : "none" } },
+          React.createElement("div", { style: { display: "flex", alignItems: "center", padding: "11px 14px" } },
+            React.createElement("div", { style: { flex: COL.name, paddingRight: 8 } },
+              e.isHw && React.createElement("div", { style: { fontSize: 8, color: C.teal, fontWeight: 700, marginBottom: 2 } }, "作業"),
+              React.createElement("div", { style: { fontSize: 13, fontWeight: 600, color: hasScore ? C.text : C.muted, lineHeight: 1.3 } }, e.name)),
+            React.createElement("div", { style: { flex: COL.due, paddingRight: 4 } },
+              React.createElement("div", { style: { fontSize: 11, color: C.muted } }, fmt(e.due))),
+            React.createElement("div", { style: { flex: COL.submitted, paddingRight: 4 } },
+              e.submitted ? React.createElement("div", { style: { fontSize: 11, color: C.muted } }, fmt(e.submitted)) : React.createElement("div", { style: { fontSize: 11, color: "#2a3a4a" } }, "—")),
+            React.createElement("div", { style: { flex: COL.status } }, React.createElement(StatusBadge, { status: e.status })),
+            React.createElement("div", { style: { flex: COL.score, textAlign: "right" } },
+              hasScore ? React.createElement("span", { style: { fontSize: 14, fontWeight: 800, color: SCORE_COLOR } }, e.score, React.createElement("span", { style: { fontSize: 10, color: C.muted, fontWeight: 400 } }, " / ", e.outOf))
+                : React.createElement("span", { style: { fontSize: 11, color: "#2a3a4a" } }, "—"))));
+      })),
+    React.createElement("div", { style: { margin: "12px 16px 16px", background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" } },
+      React.createElement("div", { style: { padding: "10px 14px 8px", borderBottom: `1px solid ${C.border}`, background: "#0e1e2a" } },
+        React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.text } }, "成績加權比例"),
+        React.createElement("div", { style: { fontSize: 10, color: C.muted, marginTop: 2 } }, "各項目依比例計入最終成績")),
+      weights.map((w, idx) =>
+        React.createElement("div", { key: idx, style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderBottom: idx < weights.length - 1 ? `1px solid #132030` : "none", background: w.isTotal ? "#0e1e2a" : "transparent" } },
+          React.createElement("span", { style: { fontSize: 13, fontWeight: w.isTotal ? 700 : 400, color: w.isTotal ? C.text : C.muted } }, w.group),
+          React.createElement("span", { style: { fontSize: 13, fontWeight: 700, color: w.isTotal ? C.amber : C.text } }, w.weight, "%")))));
 }
-
 
 function App() {
   const [page, setPage] = useState("courses");
   const [course, setCourse] = useState(null);
+  const [anchorId, setAnchorId] = useState(null);
   const [notifOpen, setNotifOpen] = useState(false);
-  const ni = {
-    notifOpen,
-    setNotifOpen: v => setNotifOpen(typeof v === "function" ? v(notifOpen) : v)
-  };
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      minHeight: "100vh",
-      background: C.bg,
-      color: C.text,
-      fontFamily: "'Noto Sans TC','PingFang TC',sans-serif",
-      paddingBottom: 40
-    },
-    onClick: () => notifOpen && setNotifOpen(false)
-  }, /*#__PURE__*/React.createElement("div", {
-    onClick: e => e.stopPropagation()
-  }, page === "courses" && /*#__PURE__*/React.createElement(CoursePage, _extends({}, ni, {
-    onAssignments: c => {
-      setCourse(c);
-      setPage("assignments");
-    },
-    onExams: c => {
-      setCourse(c);
-      setPage("exams");
-    }
-  })), page === "assignments" && course && /*#__PURE__*/React.createElement(CourseInnerPage, _extends({}, ni, {
-    course: course,
-    onBack: () => setPage("courses")
-  })), page === "exams" && course && /*#__PURE__*/React.createElement(ExamPage, _extends({}, ni, {
-    course: course,
-    onBack: () => setPage("courses")
-  }))));
+  const ni = { notifOpen, setNotifOpen: v => setNotifOpen(typeof v === "function" ? v(notifOpen) : v) };
+  return React.createElement("div", { style: { minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "'Noto Sans TC','PingFang TC',sans-serif", paddingBottom: 40 }, onClick: () => notifOpen && setNotifOpen(false) },
+    React.createElement("div", { onClick: e => e.stopPropagation() },
+      page === "courses" && React.createElement(CoursePage, _extends({}, ni, {
+        onAssignments: (c, aid) => { setCourse(c); setAnchorId(aid || null); setPage("assignments"); },
+        onExams: c => { setCourse(c); setPage("exams"); }
+      })),
+      page === "assignments" && course && React.createElement(CourseInnerPage, _extends({}, ni, {
+        course, anchorId, onBack: () => { setAnchorId(null); setPage("courses"); }
+      })),
+      page === "exams" && course && React.createElement(ExamPage, _extends({}, ni, {
+        course, onBack: () => setPage("courses")
+      }))));
 }
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(React.createElement(App));
